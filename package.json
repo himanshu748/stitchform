@@ -1,0 +1,30 @@
+{
+  "name": "stitchform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Turn a photo of a paper form into a filled, printable PDF, entirely in the browser.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "samples": "node scripts/make-samples.mjs",
+    "guard": "node scripts/hooks/commit-guard.mjs --ci"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "@types/node": "22.20.5",
+    "fast-check": "4.10.2",
+    "typescript": "7.0.2",
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
+  }
+}
