@@ -1,0 +1,26 @@
+# Runs the same checks as the Kiro commit-guard hook, for commits made outside Kiro.
+# It only runs on GitHub after the repository is pushed.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Repository guard checks (.kiro committed, MIT LICENSE, no secrets or .env, no em dashes, SAMPLE labels, Pre-existing work)
+        run: node scripts/hooks/commit-guard.mjs --ci --skip-slow
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
