@@ -1,0 +1,39 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "hook-smoke-session-start",
+      "description": "Smoke test: log that SessionStart fired and the payload shape to reports/raw/hook-smoke.log.",
+      "trigger": "SessionStart",
+      "action": {
+        "type": "command",
+        "command": "node scripts/hooks/hook-smoke.mjs SessionStart"
+      },
+      "timeout": 10,
+      "enabled": true
+    },
+    {
+      "name": "hook-smoke-file-save",
+      "description": "Smoke test: log every PostFileSave event and its payload shape to reports/raw/hook-smoke.log.",
+      "trigger": "PostFileSave",
+      "action": {
+        "type": "command",
+        "command": "node scripts/hooks/hook-smoke.mjs PostFileSave {{filePath}}"
+      },
+      "timeout": 10,
+      "enabled": true
+    },
+    {
+      "name": "hook-smoke-pre-shell",
+      "description": "Smoke test: log each PreToolUse event for the shell tool so the real tool_input shape is on record.",
+      "trigger": "PreToolUse",
+      "matcher": "shell",
+      "action": {
+        "type": "command",
+        "command": "node scripts/hooks/hook-smoke.mjs PreToolUse-shell"
+      },
+      "timeout": 10,
+      "enabled": true
+    }
+  ]
+}

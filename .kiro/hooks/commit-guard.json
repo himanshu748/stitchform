@@ -1,0 +1,17 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "commit-guard",
+      "description": "Before any shell command: block git push, gh repo create, vercel, netlify deploy, modal deploy/serve/run and npm publish unless the user set STITCHFORM_GO=1; on git commit, run typecheck, tests (reduced fast-check runs) and repo checks (.kiro not ignored, MIT LICENSE, no .env or secrets, no em dashes in docs, SAMPLE labels, dependencies listed in README Pre-existing work). Fails closed after an internal 100 s deadline.",
+      "trigger": "PreToolUse",
+      "matcher": "shell",
+      "action": {
+        "type": "command",
+        "command": "node scripts/hooks/commit-guard.mjs"
+      },
+      "timeout": 120,
+      "enabled": true
+    }
+  ]
+}

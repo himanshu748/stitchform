@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "doc-sync",
+      "description": "After each spec task finishes, keep README.md and KIRO_USAGE.md in step with what actually changed.",
+      "trigger": "PostTaskExec",
+      "action": {
+        "type": "agent",
+        "prompt": "A spec task just finished. Check the changes made in this task (git diff and git status). If, and only if, user-visible behaviour, commands, dependencies, the privacy story, or Kiro configuration under .kiro/ changed, update README.md (how to run, how to test, privacy statement, Pre-existing work with every new dependency and its licence) and KIRO_USAGE.md (which Kiro feature was used and what it did in this task). Rules: write only what actually happened, never invent numbers, users or results, write 'not measured' if a number is unknown, use plain sentences, and never use the em dash character (U+2014). If nothing relevant changed, reply 'doc-sync: no doc changes needed' and edit nothing."
+      },
+      "enabled": true
+    }
+  ]
+}
