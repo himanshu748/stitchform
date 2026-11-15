@@ -12,7 +12,7 @@ It is being built for the [Kiroween 2026 hackathon](https://kiroween.devpost.com
 
 Stitchform stitches together technologies that do not normally meet:
 
-1. **Capture** a camera photo or upload an image or PDF of a form. (planned)
+1. **Capture** a camera photo or upload an image (PNG, JPEG or WebP) of a form. PDF upload is not in v1. (planned)
 2. **OCR** in the browser with Tesseract.js finds the field labels and boxes. (planned)
 3. **Answer** each field by typing (the default) or, after you opt in, by voice in English or Hindi. (planned)
 4. **Map and check** answers with rule-based logic that catches date-format mistakes, missing required fields and missing signatures. An optional LLM can help; the app works fully with it off. (planned)
@@ -27,8 +27,8 @@ People who struggle with forms: first-generation college applicants, people more
 
 Stitchform has no backend and no server stores your answers. By default, every step runs in your browser: OCR, typed answers, mapping, checks, PDF generation and stitch-code encryption. Two optional features can send data off your device, and each stays off until you turn it on after reading a notice:
 
-- **Voice input.** By default, browser speech recognition sends your audio to a speech service run by the browser vendor (in Chrome, Google's servers), as described in [MDN: Using the Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API). Where your browser supports on-device recognition for your language, Stitchform offers it and says so.
-- **LLM help.** Field labels and your answers (never the form image) are sent to the provider you pick. The preselected provider is a Modal endpoint that the person running Stitchform deploys from `modal/` (an open-weights model served by vLLM); the alternatives are Ollama on your own machine and the Gemini free tier. With LLM help off, nothing is sent.
+- **Voice input.** By default, browser speech recognition sends your audio to a speech service run by the browser vendor, as described in [MDN: Using the Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API). Where your browser supports on-device recognition for your language, Stitchform offers it and says so.
+- **LLM help.** Field labels and your answers (never the form image) are sent to the provider you pick. The preselected provider is a Modal endpoint that the person running Stitchform deploys from `modal/` (an open-weights model served by vLLM); the alternatives are Ollama on your own machine and, only if its browser access is confirmed, the Gemini free tier. With LLM help off, nothing is sent.
 
 Apart from these, the only network requests download the app itself and the OCR language data.
 
@@ -60,11 +60,12 @@ npm run guard                  # the commit-guard repository checks on every tra
 
 ## Built with Kiro
 
-The `/.kiro` folder is committed on purpose: steering files, agent hooks, custom agents, MCP configuration and (soon) specs. See [KIRO_USAGE.md](KIRO_USAGE.md) for how each was used.
+The `/.kiro` folder is committed on purpose: steering files, agent hooks, custom agents, MCP configuration and specs. See [KIRO_USAGE.md](KIRO_USAGE.md) for how each was used.
 
 - `.kiro/steering/`: `product.md`, `tech.md`, `structure.md` (always included) and `form-privacy-and-i18n.md` (included when working on answer-handling code).
 - `.kiro/hooks/`: `test-on-save` (related Vitest tests on save), `doc-sync` (updates README and KIRO_USAGE.md after each spec task), `commit-guard` (blocks bad commits and any publish or deploy command), `hook-smoke` (logs which hooks fired).
 - `.kiro/agents/form-qa.json`: a read-only reviewer for privacy, accessibility, demo-data labelling and spec conformance.
+- `.kiro/specs/`: one spec per feature (`requirements.md` in EARS notation, `design.md`, `tasks.md`): `capture-ocr`, `field-mapping`, `voice-answers`, `llm-adapter`, `validation`, `pdf-regeneration`, `stitch-code`, `lab-ui`, `sample-forms`, `accessibility`, `deliverable-docs`.
 - `.kiro/settings/mcp.json`: the [Context7](https://github.com/upstash/context7) docs MCP server.
 
 The commit-guard hook only sees commits that the Kiro agent makes through its shell tool. Commits made by hand skip it; the CI workflow in `.github/workflows/ci.yml` runs the same checks after you push.
@@ -95,7 +96,29 @@ Third-party npm packages (development only; none are bundled into the app yet):
 
 Their own dependencies are pinned in `package-lock.json`.
 
+Chosen in the specs for later milestones (not installed or downloaded yet; each moves into the table above in the commit that adds it):
+
+| Item | Version | Licence | Used for | Spec |
+|---|---|---|---|---|
+| `tesseract.js` (with `tesseract.js-core`) | 7.0.0 | Apache-2.0 | in-browser OCR | capture-ocr |
+| Tesseract `eng` and `hin` language data ([naptha/tessdata](https://github.com/naptha/tessdata), 4.0.0) | 4.0.0 | Apache-2.0 | OCR languages, self-hosted | capture-ocr |
+| `pdf-lib` | 1.17.1 | MIT | PDF generation | pdf-regeneration |
+| `@pdf-lib/fontkit` | 1.1.1 | MIT | custom font embedding | pdf-regeneration |
+| Noto Sans Devanagari ([notofonts/devanagari](https://github.com/notofonts/devanagari)) | 2.007 | SIL OFL 1.1 | Hindi text | pdf-regeneration |
+| `qrcode` | 1.5.4 | MIT | stitch-code QR encoding | stitch-code |
+| `jsqr` | 1.4.0 | Apache-2.0 | stitch-code QR decoding | stitch-code |
+| [EFF large wordlist](https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt) | 2016 | CC BY 4.0 ([EFF copyright page](https://www.eff.org/copyright)) | generated passphrases | stitch-code |
+| SecLists `10k-most-common.txt` ([danielmiessler/SecLists](https://github.com/danielmiessler/SecLists)) | n/a | MIT | rejecting common custom passphrases | stitch-code |
+| [Qwen/Qwen3-4B-Instruct-2507](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507) | revision `cdbee75` | Apache-2.0 | optional LLM in the Modal app (not shipped in the web app) | llm-adapter |
+| vLLM ([vllm-project/vllm](https://github.com/vllm-project/vllm)) and the [Modal vLLM example](https://modal.com/docs/examples/vllm_inference) ([modal-labs/modal-examples](https://github.com/modal-labs/modal-examples)) | vLLM 0.21.0 | Apache-2.0 (vLLM), MIT (modal-examples) | optional Modal app, adapted from Modal's example | llm-adapter |
+
+The Modal app pattern comes from Modal's published example and will be credited in `modal/stitchform_llm.py`. Licences above are from the GitHub licence API and npm, checked 2026-11-15.
+
 Services and tools used while building (not shipped): Kiro, Context7 (documentation lookups), GitHub Actions (CI, runs only after the repository is pushed).
+
+## Optional LLM help: what it costs
+
+LLM help is off by default and the app works fully without it. If you deploy the optional Modal app: Modal's Starter plan includes "$30 / month free credits" ([modal.com/pricing](https://modal.com/pricing)), but Modal's billing docs say "you must have a payment method on file in order to use Modal" ([Modal billing](https://modal.com/docs/guide/billing)). The planned GPU (Nvidia L4) is listed at $0.000222 per second. Set a workspace budget and spend limit before deploying ([Modal budgets](https://modal.com/docs/guide/budgets)). Full setup steps arrive with the llm-adapter feature.
 
 ## License
 

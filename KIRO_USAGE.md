@@ -1,6 +1,6 @@
 # How Stitchform uses Kiro
 
-This file answers each Kiro write-up question in the [Kiroween 2026 rules](https://kiroween.devpost.com/rules). It records only what has actually happened, and it is updated after each task. Last update: 2026-11-15, end of milestone M1 (Kiro foundation). Specs and app features come next, so several sections below say "not yet".
+This file answers each Kiro write-up question in the [Kiroween 2026 rules](https://kiroween.devpost.com/rules). It records only what has actually happened, and it is updated after each task. Last update: 2026-11-15, end of milestone M2 (specs for all eleven features). App features come next, so several sections below say "not yet".
 
 ## Kiro surfaces used and how they differed
 
@@ -79,7 +79,24 @@ The guard only sees commits the Kiro agent makes through its shell tool. Commits
 
 ## Spec-driven development vs vibe coding
 
-Not started. Milestone M2 writes one spec per feature in `.kiro/specs/<name>/` (`requirements.md` in EARS notation, `design.md`, `tasks.md`), with folder names from PLAN.md section 5. One small part, the seam animation, will be vibe-coded first as a deliberate comparison. This section will compare the two once both have happened.
+### How the specs are structured
+
+Milestone M2 wrote one spec per feature in `.kiro/specs/<name>/`, using the folder names from PLAN.md section 5: `capture-ocr`, `field-mapping`, `voice-answers`, `llm-adapter`, `validation`, `pdf-regeneration`, `stitch-code`, `lab-ui`, `sample-forms`, `accessibility`, `deliverable-docs`. Each has the three files described in the [Kiro specs docs](https://kiro.dev/docs/specs/) and [feature specs docs](https://kiro.dev/docs/specs/feature-specs/):
+
+- `requirements.md`: introduction, glossary, then numbered requirements (1, 2, ...) with numbered acceptance criteria (1.1, 1.2, ...) in EARS form (`WHEN ... THE SYSTEM SHALL ...`, plus `IF ... THEN`, `WHILE` and `WHERE`). The fixed requirements from PLAN.md section 5 (voice notice, LLM key handling, passphrase rules) are carried into `voice-answers`, `llm-adapter` and `stitch-code`.
+- `design.md`: an "External APIs" table first, with the official doc URL for every API or fact the design relies on, then module layout, TypeScript interfaces, data flow, error handling, a "Correctness properties" section and testing. Anything that could not be confirmed is marked "not confirmed" and either left out or gated behind a task (for example the Gemini provider, Modal CORS preflight behaviour, and the Chrome-specific voice wording).
+- `tasks.md`: Markdown checkboxes, one per commit-sized task, each ending with `_Requirements: x.y_` and, where relevant, `Property: Pn`.
+
+The properties P1 to P5 from PLAN.md section 7 are tied to requirement IDs in one table that appears in the `field-mapping`, `validation` and `stitch-code` designs (and P5 in `llm-adapter`): P1 to field-mapping 5.1, 5.2, 5.4 and validation 4.1; P2 to validation 1.1, 1.2, 1.4, 1.8; P3 to stitch-code 5.1, 5.2, 2.3; P4 to field-mapping 6.1, 6.2; P5 to llm-adapter 5.1, 5.2, 5.3.
+
+How they were written: by the T3 Code agent (Kiro CLI over ACP), as plain files, not through the Kiro spec workflow UI or `kiro-cli chat --mode spec`. The docs pages read do not show the exact `tasks.md` syntax that Kiro's task runner expects, so whether Kiro's task view picks these files up as-is is not known yet (listed in "Steps for you in the Kiro IDE").
+
+What writing the specs first changed, before any code exists:
+
+- Confirming APIs before the design changed several plans. pdf-lib's open Hindi shaping issue ([#1409](https://github.com/Hopding/pdf-lib/issues/1409)) moved Hindi PDF text to a canvas-image path. vLLM's docs warn that `--api-key` leaves `/invocations` unauthenticated, so the Modal design uses Modal proxy auth instead. Modal's billing docs say a payment method must be on file, which answers an open question in PLAN.md. Gemini's browser CORS could not be confirmed, so that provider is hidden behind a gate task.
+- PDF upload was dropped from v1 capture, because OCR on a PDF needs a PDF renderer that no spec has confirmed.
+
+Whether specs saved time or caught bugs during implementation: not known yet. The seam animation will be vibe-coded first (lab-ui task 4) and then corrected against lab-ui Requirement 2 (task 5), and this section will compare the two.
 
 ## Steering strategy
 
@@ -112,6 +129,18 @@ The M1 scaffold was written by the T3 Code agent, which has no MCP connection to
 
 Package versions were taken from `npm view` on 2026-11-15. The installed Vitest is 5.1.0 and the newest Vitest docs version in Context7 was 5.0.3, so the lookups used 5.0.3.
 
+M2 lookups (spec phase), again through Context7's public REST API from the T3 Code session:
+
+| Library (Context7 ID) | Question | What it changed |
+|---|---|---|
+| pdf-lib (`/hopding/pdf-lib`) | Custom fonts with fontkit, PNG/JPEG embedding, metadata, `save` options, embedding pages of another PDF | pdf-regeneration design: `registerFontkit` before `embedFont`; sample PDFs saved with `useObjectStreams: false` so the "SAMPLE / DEMO DATA" title stays readable for commit-guard; `embedPdf` + `drawPage` for the "over original" background. |
+| Tesseract.js (`/naptha/tesseract.js/v7.0.0`) | `createWorker` options for self-hosting, `recognize` output | capture-ocr design: `corePath` must be a directory holding all four core builds; since v6 only `text` is returned by default, so the design requests `{ blocks: true }`; `rotateAuto` replaces a hand-written deskew step. |
+| fast-check (`/dubzzz/fast-check`) | `fc.date` options, `fc.record`, `fc.uint8Array` | validation design: P2 generates `{ y, m, d }` integers instead of `fc.date`, so no time zone enters the date property. |
+| Playwright (`/microsoft/playwright/v1.64.1`) | `page.screenshot` from a Node script | sample-forms design: sample PNGs are rendered by headless Chromium through Playwright (already a dev dependency) instead of adding a Node canvas library. |
+| Library search (`/api/v2/libs/search`) for `tesseract.js`, `qrcode`, `vllm` | Which IDs exist | Found the IDs above; for vLLM the CLI flags were read on [docs.vllm.ai](https://docs.vllm.ai/en/latest/cli/serve.html) directly. |
+
+Official sites were read directly for the rest (cited in each design.md): MDN (Web Speech, Web Crypto, CompressionStream, getUserMedia, fetch, AbortSignal, FontFace, canvas) and MDN browser-compat-data, Modal docs and pricing, vLLM docs, Ollama docs, Google's Gemini API docs, Chrome's Local Network Access post, npm metadata, Hugging Face model API, EFF and W3C WCAG 2.2.
+
 ## Property-based testing
 
 fast-check 4.10.2 is set up (`vitest.setup.ts`, `FC_NUM_RUNS`). So far the only properties are two on the commit-guard command classifier in `scripts/hooks/guard-rules.test.mjs`:
@@ -137,7 +166,7 @@ From the Kiro docs (pages cited in PLAN.md section 8) and what was observed on t
 |---|---|---|---|
 | Steering with inclusion modes | Yes (V3 full) | Yes | Files written; loading not yet checked in a session |
 | Generate foundation steering from the UI | No | Yes | Written by hand instead |
-| Specs (requirements, design, tasks) | Yes (`--mode spec` exists) | Yes | Not started |
+| Specs (requirements, design, tasks) | Yes (`--mode spec` exists) | Yes | 11 specs written as files by the T3 Code agent; `--mode spec` not used; task-runner pickup not checked |
 | Spec "Correctness" (properties from specs) | No | Yes | Not started |
 | Hooks: SessionStart, PreToolUse, PostFileSave | V3 | Yes | Fired in the smoke test |
 | Hooks: PostTaskExec | V3 | Yes | Not exercised yet |
@@ -149,7 +178,9 @@ From the Kiro docs (pages cited in PLAN.md section 8) and what was observed on t
 
 ## Steps for you in the Kiro IDE
 
-- [ ] Run the spec "Correctness" capability on the `field-mapping`, `validation` and `stitch-code` specs once they exist, and compare the generated properties with the hand-written ones (for the property-based testing section).
+- [ ] Run the spec "Correctness" capability on the `field-mapping`, `validation` and `stitch-code` specs (they now exist), and compare the generated properties with P1 to P5 (for the property-based testing section).
+- [ ] Open `.kiro/specs/` in the IDE and check that each `tasks.md` shows up as runnable tasks; tell me if the checkbox format needs changing.
+- [ ] Optional: run "Analyze Requirements" on `stitch-code` or `llm-adapter` and tell me what it finds.
 - [ ] Optional: generate foundation steering files from the IDE and compare them with the hand-written `product.md`, `tech.md` and `structure.md`.
 - [ ] Optional: open the Agent Hooks panel to confirm the four hook files load in the IDE, and record the panel for the video.
 - [ ] Optional: install the Context7 power from the Powers panel or [kiro.dev/powers](https://kiro.dev/powers/) if you want to try powers; tell me and I will record the result here.
