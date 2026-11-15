@@ -160,6 +160,8 @@ describe('payload helpers', () => {
   });
 
   it('extracts a file path from argv or payload', () => {
+    // Kiro CLI 3.3.0 sends file_path (absolute) and passes {{filePath}} through literally.
+    expect(extractFilePath({ hook_event_name: 'PostFileSave', file_path: '/repo/src/x.ts' }, ['{{filePath}}'])).toBe('/repo/src/x.ts');
     expect(extractFilePath(null, ['src/a.ts'])).toBe('src/a.ts');
     expect(extractFilePath({ file_path: 'src/b.ts' }, ['{{filePath}}'])).toBe('src/b.ts');
     expect(extractFilePath({ tool_input: { path: 'src/c.ts' } }, [])).toBe('src/c.ts');
@@ -180,6 +182,18 @@ describe('commit-guard.mjs end to end (publish paths only)', () => {
     const r = run({ hook_event_name: 'PreToolUse', tool_name: 'shell', tool_input: { command: 'git push' } });
     expect(r.status).toBe(2);
     expect(r.stderr).toMatch(/blocked a publishing command/);
+  });
+
+  it('handles the payload shape recorded from Kiro CLI 3.3.0 (tool_name execute_bash)', () => {
+    // Shape copied from reports/raw/hook-smoke.log during the M1 smoke test.
+    const r = run({
+      session_id: 'sess_example',
+      hook_event_name: 'PreToolUse',
+      cwd: process.cwd(),
+      tool_name: 'execute_bash',
+      tool_input: { command: 'git push --dry-run', description: 'x', cwd: null, run_in_background: false, timeout: null },
+    });
+    expect(r.status).toBe(2);
   });
 
   it('allows git push only when STITCHFORM_GO=1', () => {

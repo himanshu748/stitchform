@@ -86,7 +86,7 @@ function candidateFiles(command) {
 
 function runCommand(label, cmd, cmdArgs, env = {}) {
   return new Promise((resolveRun) => {
-    const child = spawn(cmd, cmdArgs, { env: { ...process.env, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(cmd, cmdArgs, { env: { ...process.env, FORCE_COLOR: '0', NO_COLOR: '1', ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
     children.add(child);
     let output = '';
     child.stdout.on('data', (c) => { output += c; });

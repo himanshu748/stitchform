@@ -29,11 +29,17 @@ async function main() {
   const vitest = join('node_modules', '.bin', 'vitest');
   const r = spawnSync(vitest, ['related', rel, '--run', '--passWithNoTests', '--reporter=dot'], {
     encoding: 'utf8',
+    env: { ...process.env, FORCE_COLOR: '0', NO_COLOR: '1' },
     timeout: 110_000,
   });
   const output = `${r.stdout ?? ''}${r.stderr ?? ''}`.split('\n').slice(-30).join('\n');
   if (r.status === 0) {
-    process.stdout.write(`test-on-save: tests related to ${rel} passed.\n${output}\n`);
+    const none = /No (affected )?test files found/i.test(output);
+    process.stdout.write(
+      none
+        ? `test-on-save: no tests import ${rel} yet. Add tests next to it.\n`
+        : `test-on-save: tests related to ${rel} passed.\n${output}\n`,
+    );
     return 0;
   }
   process.stderr.write(`test-on-save: tests related to ${rel} FAILED. Fix them before moving on.\n${output}\n`);
