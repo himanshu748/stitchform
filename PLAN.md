@@ -1,6 +1,6 @@
 # Stitchform: Project Plan
 
-Status: **draft for approval (v2)**. Nothing beyond this file will be built until you approve it.
+Status: **approved (v2, decisions recorded in section 12 on 2026-11-15)**.
 
 Written 2026-11-15, revised the same day after a review. Deadline: **4 Dec 2026, 2:00 PM PT** (about 19 days away).
 
@@ -48,7 +48,7 @@ Source: [Kiroween 2026 official rules](https://kiroween.devpost.com/rules), read
 | Working app | Functional app URL (website, demo or test build), free and unrestricted for judges until judging ends. | Static hosting after your go; URL placeholder in README until then. |
 | Description | Text description of the project. | DEVPOST_STORY.md. |
 | Demo video | Under 3 minutes, footage of the project functioning on its device, public on YouTube, no third-party trademarks or copyrighted music without permission. | VIDEO_SHOTLIST.md. You record and upload it. |
-| Repository | Public GitHub repo (not GitLab or Bitbucket) with an open source license detectable in the About section. | LICENSE at root (open question 1). |
+| Repository | Public GitHub repo (not GitLab or Bitbucket) with an open source license detectable in the About section. | MIT LICENSE at root (decision 1). |
 | /.kiro | At the repo root and not in `.gitignore`. | Committed from milestone M1; commit-guard checks it. |
 | Category declaration | Identify the category and any bonus category in the form. | SUBMISSION_CHECKLIST.md. |
 | Third-party terms | Integrations must be used according to their terms. | Each provider's free-tier terms checked in the spec phase and noted in README. |
@@ -63,7 +63,7 @@ Source: [Kiroween 2026 official rules](https://kiroween.devpost.com/rules), read
 | Social Blitz | Post must **start** with `#KiroweenHackathon26`, include your favourite thing about Kiro and how it changed the way you approached development, be posted during the Submission Period, and be linked in the form. | SOCIAL_POST.md, with your favourite thing left as a TODO for you. |
 | Bonus Blog | Public post about Kiro and the build on a third-party platform during the Submission Period; must mention it is being written as part of the Kiroween 2026 hackathon. | BLOG_DRAFT.md. You publish it. |
 | Best Demo | Highest Presentation score within the top 10% overall. Automatic. | No action. |
-| Best Ghost of Kiroween Past | You registered for Kiroween 2025. | Only if that applies to you (open question 6). |
+| Best Ghost of Kiroween Past | You registered for Kiroween 2025. | Not applicable: you did not register for Kiroween 2025 (decision 6). |
 | Best Startup | Founder, LinkedIn, startup site. | Not applicable unless you say otherwise. |
 | Best Kiro Crew App | Write-up and public repo of a Kiro Crew app. | Not applicable. |
 
@@ -78,7 +78,7 @@ Items marked "guarded" are checked automatically by the commit-guard hook and by
 - [ ] Public GitHub repo with an OSI-approved `LICENSE` that GitHub detects and shows in the About section.
 - [ ] `/.kiro` committed at the repo root (specs, hooks, steering, agents) and **never** added to `.gitignore` (guarded).
 - [ ] Brand-new code only. Every template, library, font, word list and asset from elsewhere is listed in README under "Pre-existing work" (guarded for new dependencies). This includes the T3 Code placeholder `README.md` text and `assets/icon.svg` from the initial commit.
-- [ ] Free tiers only. Any runtime LLM is a free tier (Gemini free, Groq free) or local (Ollama).
+- [ ] Free tiers only. Any runtime LLM is a free tier or local. Providers: `none` (default), Modal (preselected when LLM help is on: an open-weights model you deploy on Modal's Starter plan, "$0+ compute / month" with "$30 / month free credits" per [modal.com/pricing](https://modal.com/pricing); whether Starter needs a payment card is still to confirm), Ollama (local), and Gemini free tier (optional, if CORS and terms check out). Deploying the Modal app waits for your go.
 - [ ] All LLM access goes through **one adapter**, with a **no-LLM fallback** (rule-based) as the default, so judges can always test the app.
 - [ ] Never publish, deploy to production, post, or submit anything. Free hosting (Vercel, Netlify, GitHub Pages, AWS free tier) only after you say go (guarded: push and deploy commands are blocked).
 - [ ] If a login is needed, stop and give you the exact command to run.
@@ -98,7 +98,7 @@ Items marked "guarded" are checked automatically by the commit-guard hook and by
 | `capture` | Camera capture via `getUserMedia`, plus file upload (image or PDF). Preprocessing (grayscale, contrast, deskew) to help OCR on crumpled photos. | MediaDevices `getUserMedia`, Canvas |
 | `ocr` | OCR in a Web Worker. Detect field labels and boxes. English and Hindi language data, self-hosted with the app so no third-party CDN sees the request (Tesseract.js configuration to confirm). | Tesseract.js, `eng` and `hin` traineddata |
 | `form-model` | Field schema shared by every module: `id`, `label`, `type` (text, date, number, choice, signature), `required`, `bbox`, `page`. Manual correction of detected boxes. | none (plain TypeScript) |
-| `mapping` | Rule-based mapper (label synonyms in EN and HI, type hints) that assigns answers to fields. LLM adapter interface with providers: `none` (default), Gemini free tier, Groq free tier, Ollama local. LLM output is only a suggestion and must pass the same validators. | Provider HTTP APIs (to confirm, including browser CORS for each provider; see section 11) |
+| `mapping` | Rule-based mapper (label synonyms in EN and HI, type hints) that assigns answers to fields. LLM adapter interface with providers: `none` (default), Modal (preselected when LLM help is on; a Modal app in `modal/` serves an open-weights model through vLLM's OpenAI-compatible server, deployed by you after your go), Ollama local (OpenAI-compatible endpoint), Gemini free tier (optional). LLM output is only a suggestion and must pass the same validators. | Provider HTTP APIs (to confirm, including browser CORS for each provider; see section 11) |
 | `voice` | Field-by-field prompting. Typed input is the default. Voice is opt-in behind a notice, using SpeechRecognition with `en-IN` and `hi-IN`. Where `SpeechRecognition.available()` reports on-device support, the app offers on-device mode (`processLocally`). Hidden when SpeechRecognition is unsupported. | Web Speech API (SpeechRecognition, optional SpeechSynthesis), per [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API) |
 | `validation` | Date and DOB normalisation (DD/MM/YYYY, D-M-YY, spoken dates, Devanagari digits), required-field flagging, signature presence check. Produces a list of issues per field. | none (plain TypeScript) |
 | `pdf` | Redraw the original page and draw answers at each field's box so the layout matches the original. Embed a Devanagari-capable font for Hindi text. | pdf-lib, @pdf-lib/fontkit, a free OFL font (for example Noto Sans Devanagari) |
@@ -114,7 +114,7 @@ flowchart LR
   C --> D[form-model: fields]
   E[typed answers, default] --> F[mapping: rule-based]
   V[voice EN/HI, opt-in] -. audio to browser speech service unless on-device .-> F
-  F -. optional, opt-in .-> G[LLM adapter: Gemini / Groq / Ollama]
+  F -. optional, opt-in .-> G[LLM adapter: Modal vLLM / Ollama / Gemini]
   G -.-> F
   D --> F
   F --> H[validation: dates, required, signature]
@@ -136,7 +136,7 @@ Each feature maps to exactly one judging criterion and gets its own spec folder 
 | F1 | Form capture + OCR | Photo or upload, preprocess, and detect labels and boxes in the browser in EN and HI. | Technological Implementation | `.kiro/specs/capture-ocr/` |
 | F2 | Field model + rule-based mapping | Shared field schema and a deterministic mapper from answers to fields, with manual box correction. | Technological Implementation | `.kiro/specs/field-mapping/` |
 | F3 | Answering: typed default + opt-in voice EN/HI | Field-by-field answers, typed by default; voice after a notice that names where audio goes; on-device mode where available. | Potential Impact | `.kiro/specs/voice-answers/` |
-| F4 | LLM adapter + no-LLM fallback | One adapter for none, Gemini free, Groq free or Ollama, off by default, rule-based when off or failing. | Innovation/Idea | `.kiro/specs/llm-adapter/` |
+| F4 | LLM adapter + no-LLM fallback | One adapter for none, Modal (preselected, your own vLLM deployment on free credits), Ollama local or Gemini free, off by default, rule-based when off or failing. | Innovation/Idea | `.kiro/specs/llm-adapter/` |
 | F5 | Validation | Date normalisation, required-field flagging and signature presence checks with clear messages. | Potential Impact | `.kiro/specs/validation/` |
 | F6 | PDF regeneration | pdf-lib redraw that matches the original layout, Devanagari-capable, printable. | Technological Implementation | `.kiro/specs/pdf-regeneration/` |
 | F7 | QR stitch code | Passphrase-encrypted answers in a QR code for instant refill, nothing stored on a server. | Innovation/Idea | `.kiro/specs/stitch-code/` |
@@ -171,7 +171,7 @@ Stitchform ships 3 sample forms that it creates itself. All are fictional, carry
 |---|---|---|
 | College admission form | "Lantern Hill College of Arts and Sciences (fictional)" | Name, DOB, guardian, address, course choice, previous marks, photo box, signature |
 | Scholarship application | "Moonfield Merit Scholarship Trust (fictional)" | Name, DOB, family income band (demo values), course of study, short statement line, declaration checkbox, signature |
-| Third form (open question 3) | "Hollowbrook Residential Hostel (fictional)" or "Grimwood Community Bank KYC (mock, fictional)" | Name, DOB, ID type (mock), address, emergency contact, date fields in mixed formats, signature |
+| Hostel admission form (decision 3) | "Hollowbrook Residential Hostel (fictional)" | Name, DOB, ID type (mock), address, emergency contact, date fields in mixed formats, signature |
 
 - A script in the repo (for example `scripts/make-samples.ts`) generates the sample PDFs and images, so they are brand-new work.
 - The script also makes a "crumpled photo" version of each sample (rotation, perspective, noise) to test OCR on realistic input.
@@ -276,7 +276,7 @@ Your 3.3.0 CLI covers everything the plan needs except the two IDE-only items. S
 ## 9. Deliverables
 
 - **README.md**: what Stitchform is, who it is for, how to run it, test instructions, a working app URL placeholder, the privacy statement from section 1, "Pre-existing work", and the `OLLAMA_ORIGINS` setup for the Ollama option.
-- **LICENSE**: OSI-approved (open question 1).
+- **LICENSE**: MIT (decision 1).
 - **KIRO_USAGE.md**: one heading per write-up question in the rules (Kiro surfaces used, custom agents, hooks, spec vs vibe coding, steering strategy, MCP, PBT, powers), updated after each task.
 - **DEVPOST_STORY.md**: an honest project story, including what did not work.
 - **VIDEO_SHOTLIST.md**: shot list for a video under 3:00, real screen and phone-camera footage only, no copyrighted music, no third-party trademarks.
@@ -313,7 +313,8 @@ Commit after each task, with conventional commit messages. Never push without yo
 | Voice privacy: by default browser speech recognition sends audio to a server ([MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API)) | Typed input is the default. Voice is opt-in behind a notice that names where audio goes. Offer on-device recognition when `SpeechRecognition.available()` reports it for the language. |
 | Voice support varies by browser, and Hindi on-device language packs may not exist | Feature-detect; hide voice when unsupported; check browser and `hi-IN` support on MDN compatibility tables in the spec phase; typed input always works. |
 | Ollama blocks the hosted app's origin | Per the [Ollama FAQ](https://docs.ollama.com/faq), Ollama allows cross-origin requests from `127.0.0.1` and `0.0.0.0` by default and other origins need `OLLAMA_ORIGINS`. README gives the exact command. Whether Chrome's local-network rules add a permission prompt for a hosted page calling `localhost` is to verify in Chrome docs. |
-| Groq browser calls | The official [groq-typescript README](https://github.com/groq/groq-typescript) disables browser use by default and needs `dangerouslyAllowBrowser`, warning that this exposes credentials. Whether Groq's HTTP API sends CORS headers for any origin is still unconfirmed. M2 confirms it in Groq docs and with a one-request smoke test using your own key. If it fails, Groq is dropped and the list shrinks to Gemini and Ollama. |
+| Groq browser calls | Dropped after your decision to preselect Modal (decision 4). Groq is on the cut list and is not built. |
+| Modal endpoint cost, cold starts and browser access | Modal is preselected but off until the user turns LLM help on. You deploy the Modal app yourself after your go; the agent never runs `modal deploy`, `modal serve` or `modal run` (guarded). The [Modal vLLM example](https://modal.com/docs/examples/vllm_inference) uses an H200 GPU and a 26B model, which is too costly for the $30 monthly Starter credit, so the spec phase picks a small instruct model and a small GPU after checking GPU prices on [modal.com/pricing](https://modal.com/pricing) and the model licence on Hugging Face. With no warm container the endpoint returns 503, so the adapter shows "warming up" and falls back to rule-based mapping. Browser CORS (vLLM `--allowed-origins`) and endpoint auth (vLLM `--api-key` or Modal proxy auth) are to confirm in vLLM and Modal docs in M2. Whether the Starter plan requires a payment card is unconfirmed; it will be checked in Modal docs or stated as unknown. Modal also lists credit grants for academics on its pricing page, which may suit a student entry. |
 | Gemini key handling | The [Gemini API key docs](https://aistudio.google.com/docs/api-key) say never to expose keys client-side in production and recommend a backend proxy. Stitchform has no backend and never ships a key: each user pastes their own key at runtime, held in memory by default. README tells users to create a dedicated key and how to delete it. Browser CORS for the Gemini REST API is to confirm in M2. |
 | Free-tier LLM rate limits | LLM is optional and off by default; rule-based mapping always works; LLM errors fall back to rule-based mapping with a visible message. |
 | Stitch code brute force if the QR is photographed or shared | Generated 5-word passphrase by default; 16-character minimum and common-password check for custom ones; PBKDF2-HMAC-SHA256 at 600,000 iterations; AES-GCM; the UI warns that anyone with the QR and the passphrase can read the answers. |
@@ -323,17 +324,17 @@ Commit after each task, with conventional commit messages. Never push without yo
 | Manual commits skip commit-guard | CI on push and PR; optional git pre-commit script you can enable; stated in KIRO_USAGE.md. |
 | Hooks may not fire when Kiro CLI is driven over ACP | Smoke-test hook in M1; if they do not fire, you demonstrate hooks in the Kiro IDE or the plain CLI terminal UI. |
 | Context7 rate limits without a key | Optional free key in an environment variable; fall back to the official docs sites. |
-| Tight timeline | Cut list, in order: third sample's alternate, local power, generic box detection beyond the samples, Groq provider. |
+| Tight timeline | Cut list, in order: local power, Gemini provider, generic box detection beyond the samples. Groq is already cut. |
 
 ---
 
-## 12. Open questions for you
+## 12. Decisions (approved 2026-11-15)
 
-Each has a proposed default. If you approve the plan without answering, I will use the defaults.
+You approved the plan on 2026-11-15 with the reply "approve, modal,vercel,no". The original open questions and the answers now in force:
 
-1. **LICENSE:** MIT or Apache-2.0? **Default: MIT** (short, widely detected by GitHub).
-2. **GitHub owner and repo name:** **Default: `stitchform` under your personal account.** You create the repo when you say go; I will give you the exact commands (`gh auth login` if needed, then `gh repo create`). Nothing has been pushed. The current `origin` points at a local folder, not GitHub.
-3. **Third sample form:** hostel admission or bank-KYC-style mock? **Default: hostel admission** (lower risk of looking like a real bank or government KYC form).
-4. **LLM provider to preselect when the user turns LLM help on** (it is off by default): Gemini free tier, Groq free tier, or Ollama local? **Default: Gemini free tier**, subject to the CORS and terms check in M2; Ollama for users who want nothing to leave their machine.
-5. **Hosting target, only after you say go:** Vercel, Netlify, GitHub Pages or AWS free tier? **Default: GitHub Pages** (same place as the repo, static site, no extra account).
-6. **Best Ghost of Kiroween Past:** did you register for Kiroween 2025? **Default: assume no** and leave it out of the checklist.
+1. **LICENSE:** MIT.
+2. **GitHub owner and repo name:** `stitchform` under your personal account. You create the repo when you say go; I will give you the exact commands (`gh auth login` if needed, then `gh repo create`). Nothing has been pushed. The current `origin` points at a local folder, not GitHub.
+3. **Third sample form:** hostel admission, "Hollowbrook Residential Hostel (fictional)".
+4. **LLM provider preselected when the user turns LLM help on** (it is off by default): **Modal.** A Modal app in `modal/` serves an open-weights model through vLLM's OpenAI-compatible server. You deploy it after your go. Modal's Starter plan is "$0+ compute / month" with "$30 / month free credits" ([modal.com/pricing](https://modal.com/pricing), checked 2026-11-15); whether Starter needs a payment card is unconfirmed. Other providers: Ollama local, Gemini free tier optional. Groq is dropped.
+5. **Hosting target, only after you say go:** Vercel.
+6. **Best Ghost of Kiroween Past:** you did not register for Kiroween 2025, so this bonus is not applicable and is left out of the checklist.
