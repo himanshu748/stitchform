@@ -1,7 +1,9 @@
 // Tests for the adapter with provider "none" (llm-adapter Req 1.1, 1.2, 1.4), including the
 // FEAT-003 acceptance check that the whole typed, no-LLM path (rule-based mapping, validation,
 // adapter) makes no network call: every network API a page script can use is replaced by a stub
-// that records the call and throws. The form, answers and dates are SAMPLE / DEMO DATA.
+// that records the call and throws. Also examples for assistWithProvider with a fake provider
+// (Req 1.4, 5.1 to 5.5); its property P5 is in merge.property.test.ts. The form, answers, dates
+// and replies are SAMPLE / DEMO DATA.
 
 import fc from 'fast-check';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -10,9 +12,10 @@ import { mapAnswers } from '../mapping';
 import { mappingInputArb } from '../mapping/arbitraries';
 import type { ValidationContext } from '../validation';
 import { validationContextArb } from '../validation/arbitraries';
-import { DEFAULT_PROVIDER_CONFIG, assist } from './adapter';
+import { DEFAULT_PROVIDER_CONFIG, assist, assistWithProvider } from './adapter';
 import * as publicApi from './index';
-import type { ProviderConfig } from './types';
+import { buildRequest } from './prompt';
+import type { LlmProvider, LlmRequest, ProviderConfig } from './types';
 
 const NETWORK_APIS = ['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource'] as const;
 const networkCalls = vi.fn();
@@ -127,5 +130,83 @@ describe('one adapter (Req 1.2)', () => {
       expect((error as Error).message).toBe(`LLM provider "${config.id}" is not available in this build`);
     }
     expect(networkCalls).not.toHaveBeenCalled();
+  });
+});
+
+/** A provider that records each request and resolves with `reply`, after running `during` if given. */
+function fakeProvider(reply: string, during?: () => void): LlmProvider & { requests: LlmRequest[] } {
+  const requests: LlmRequest[] = [];
+  return {
+    id: 'modal',
+    requests,
+    complete: (req) => {
+      requests.push(req);
+      during?.();
+      return Promise.resolve(reply);
+    },
+  };
+}
+
+describe('assistWithProvider with a fake provider (Req 1.4, 5.1 to 5.5)', () => {
+  const ruleResult = mapAnswers(form, answers, new Set(), ctx);
+  const signal = (): AbortSignal => new AbortController().signal;
+
+  it('sends labels and answers, merges the reply through the validators and returns counts and notes', async () => {
+    const before = structuredClone(ruleResult);
+    const reply = JSON.stringify({
+      suggestions: [
+        { fieldId: 'dob', value: '2005-08-14' },
+        { fieldId: 'emergency-contact-phone', value: 'call the warden (demo)' },
+        { fieldId: 'full-name', value: 'Other Demo Name' },
+        { fieldId: 'signature', value: 'signed' },
+        { fieldId: 'demo-not-on-form', value: 'Demo value' },
+      ],
+      warnings: [
+        { fieldId: 'city', note: 'Check the spelling (demo).' },
+        { fieldId: 'demo-not-on-form', note: 'Not on this form (demo).' },
+      ],
+    });
+    const provider = fakeProvider(`\`\`\`json\n${reply}\n\`\`\``);
+    const outcome = await assistWithProvider(provider, form, answers, ruleResult, signal(), ctx);
+
+    expect(provider.requests).toEqual([buildRequest(form, answers)]);
+    expect(ruleResult).toEqual(before);
+    expect(outcome).toMatchObject({ kind: 'ok', accepted: 1, rejected: 1, notes: [{ fieldId: 'city', note: 'Check the spelling (demo).' }] });
+    const { fields } = outcome.result;
+    expect(fields.dob).toEqual({ fieldId: 'dob', status: 'filled', value: '14/08/2005', provenance: 'llm', issues: [{ fieldId: 'dob', code: 'llm-suggestion', severity: 'info' }] });
+    expect(fields['emergency-contact-phone']?.issues.map((i) => i.code)).toEqual(['required-missing', 'llm-rejected']);
+    expect(fields['full-name']).toEqual(ruleResult.fields['full-name']);
+    expect(fields.signature).toEqual(ruleResult.fields.signature);
+    expect(networkCalls).not.toHaveBeenCalled();
+  });
+
+  it('keeps the rule-based result as bad output when the reply is not the expected JSON', async () => {
+    for (const reply of ['', 'Sorry, I cannot help with that.', '{"suggestions": [{"fieldId": "dob", "value": 14}]}', '{"suggestions": [']) {
+      const outcome = await assistWithProvider(fakeProvider(reply), form, answers, ruleResult, signal(), ctx);
+      expect(outcome).toEqual({ kind: 'fallback', result: ruleResult, reason: 'bad-output' });
+      expect(outcome.result).toBe(ruleResult);
+    }
+  });
+
+  it('treats a valid reply with nothing in it as ok, with nothing changed', async () => {
+    const outcome = await assistWithProvider(fakeProvider('{"suggestions": [], "warnings": []}'), form, answers, ruleResult, signal(), ctx);
+    expect(outcome).toEqual({ kind: 'ok', result: ruleResult, accepted: 0, rejected: 0, notes: [] });
+  });
+
+  it('does not call the provider when the signal is already cancelled', async () => {
+    const provider = fakeProvider('{"suggestions": [{"fieldId": "dob", "value": "14/08/2005"}]}');
+    const outcome = await assistWithProvider(provider, form, answers, ruleResult, AbortSignal.abort(), ctx);
+    expect(outcome).toEqual({ kind: 'fallback', result: ruleResult, reason: 'cancelled' });
+    expect(outcome.result).toBe(ruleResult);
+    expect(provider.requests).toEqual([]);
+  });
+
+  it('merges nothing when the user cancels while the reply is on its way (Req 1.4)', async () => {
+    const controller = new AbortController();
+    const provider = fakeProvider('{"suggestions": [{"fieldId": "dob", "value": "14/08/2005"}]}', () => controller.abort());
+    const outcome = await assistWithProvider(provider, form, answers, ruleResult, controller.signal, ctx);
+    expect(outcome).toEqual({ kind: 'fallback', result: ruleResult, reason: 'cancelled' });
+    expect(outcome.result).toBe(ruleResult);
+    expect(provider.requests).toHaveLength(1);
   });
 });

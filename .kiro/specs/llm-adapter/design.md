@@ -40,7 +40,7 @@ src/llm/
   openai-compatible.ts  one HTTP client for modal and ollama (fetch)
   gemini.ts           hidden until confirmed
   key-store.ts        memory by default, optional localStorage with forget
-  adapter.ts          assist(config, form, answers, ruleResult, signal, ctx) -> Promise<LlmOutcome>; DEFAULT_PROVIDER_CONFIG
+  adapter.ts          assist(config, form, answers, ruleResult, signal, ctx) -> Promise<LlmOutcome>; DEFAULT_PROVIDER_CONFIG; assistWithProvider(provider, form, answers, ruleResult, signal, ctx) (internal)
   index.ts
 modal/stitchform_llm.py
 ```
@@ -65,6 +65,8 @@ export interface LlmRequest {
 
 export interface LlmSuggestion { fieldId: string; value?: string; note?: string }
 
+export interface LlmNote { fieldId: string; note: string }   // model text, kept out of the MappingResult (task 4 conventions)
+
 export interface LlmProvider {
   readonly id: Exclude<ProviderId, "none">;
   complete(req: LlmRequest, signal: AbortSignal): Promise<string>; // raw model text
@@ -72,7 +74,7 @@ export interface LlmProvider {
 
 export type LlmOutcome =
   | { kind: "off"; result: MappingResult }
-  | { kind: "ok"; result: MappingResult; accepted: number; rejected: number }
+  | { kind: "ok"; result: MappingResult; accepted: number; rejected: number; notes: LlmNote[] }
   | { kind: "fallback"; result: MappingResult; reason: "timeout" | "network" | "http" | "warming-up" | "bad-output" | "cancelled" };
 ```
 
@@ -133,7 +135,7 @@ System message (English, fixed): the model gets the field list and the answers a
 | CORS or network | `fetch` rejects with `TypeError`; script cannot tell a CORS block from a network failure, so the message covers both | Provider-specific hint: Ollama shows the `OLLAMA_ORIGINS` line; Modal says the endpoint does not allow this site |
 | 401 / 403 | status | "The endpoint refused the key." |
 | Other HTTP error | status | "The model service returned an error (HTTP n). Using the built-in rules." |
-| Bad output | `parseSuggestions` returns `[]` from non-empty text | "The model's reply could not be used. Using the built-in rules." |
+| Bad output | `parseReply` returns `null`: the reply is not the expected JSON (task 3 and 5 conventions). A valid reply with nothing in it is `ok` with nothing changed. | "The model's reply could not be used. Using the built-in rules." |
 | User cancel | user presses Cancel, `AbortController.abort()` | no message |
 
 Error messages never include the key, the answers or the response body.
@@ -200,8 +202,20 @@ Task 4 (`merge.ts`):
 - For each field only the first suggestion with a non-blank value is tried. Blank values are skipped (no `llm-rejected`, since a blank is no suggestion), and later values for the same field are ignored.
 - A value suggested for a `signature` or `photo` field is dropped without an issue (rule 4). The system prompt tells the model not to suggest them, and an `llm-rejected` issue there would hint that a suggested signature could ever be accepted.
 - Pass: the field gets the validator's issues for the new value (for example `date-two-digit-year`) followed by `llm-suggestion`; the field's old issues, which were about the old answer, go. Fail: the field keeps its own issues and gets `llm-rejected`; the validator's error for the model's value is not added, because it is not about anything the user entered. Neither `llm-suggestion` nor `llm-rejected` has parameters, so no suggested value reaches an issue.
-- Rule 5: the result is built from `form.fields`, one entry per field in form order, and an entry for an ID the form does not have is dropped. A field with no entry in the rule-based result (only possible for a result built by hand) starts as `empty`, and a required field other than a photo that is still `empty` after the merge becomes `flagged` with `required-missing`, or `signature-missing` for a signature. Entries are looked up as own properties only, so a field ID such as `constructor` cannot find `Object.prototype.constructor`.
+- Rule 5: the result is built from `form.fields`, one entry per field, and an entry for an ID the form does not have is dropped. Entries are added in form order, but key order is not promised: JavaScript lists integer-like keys such as `"0"` and `"4"` first, and the P5 property generated such IDs, so tests compare the sorted keys (the mapping P1 test does the same). A field with no entry in the rule-based result (only possible for a result built by hand) starts as `empty`, and a required field other than a photo that is still `empty` after the merge becomes `flagged` with `required-missing`, or `signature-missing` for a signature. Entries are looked up as own properties only, so a field ID such as `constructor` cannot find `Object.prototype.constructor`.
 - `mergeSuggestions` copies every entry and its issue list, so neither input changes and the result shares no object with `ruleResult`. It returns only the `MappingResult`; the `accepted` and `rejected` counts of an `ok` outcome are worked out by the adapter (task 5).
+
+Task 5 (P5 and the P1 re-check, `src/llm/merge.property.test.ts`):
+
+- P5 reaches the provider path through `assistWithProvider(provider, form, answers, ruleResult, signal, ctx)` in `adapter.ts`: the provider-independent part of `assist`, which runs `buildRequest`, `provider.complete`, `parseReply`, `mergeSuggestions` and `collectNotes`. The property passes a fake `LlmProvider` that records the request and resolves with the generated string. Task 6 makes `assist` build the client for the configured provider and call `assistWithProvider`, so P5 covers the code the app runs. This was chosen over an optional provider argument on `assist`, which would put a test seam into the UI's API, and over checking `mergeSuggestions(parseSuggestions(s))` alone, which would skip the outcome logic. `index.ts` does not export `assistWithProvider`, so the export-list test is unchanged.
+- Outcomes: a signal cancelled before the request gives `fallback` "cancelled" without calling the provider; a signal cancelled while the reply is on its way gives `fallback` "cancelled" with nothing merged (Req 1.4); `parseReply` returning `null` gives `fallback` "bad-output" with the rule-based result object itself; anything else gives `ok`. A valid reply with nothing in it is `ok` with zero counts and an unchanged result, and the "Bad output" row of the error table now says so. A rejection from `provider.complete` is passed on until task 6 maps timeouts, network and HTTP errors to fallback reasons.
+- The `ok` outcome gained `notes: LlmNote[]` (task 4 conventions), and the Types block above shows it. `index.ts` also exports the `LlmNote` type for the UI.
+- `accepted` is the number of `llm-suggestion` issues and `rejected` the number of `llm-rejected` issues the merge added, compared field by field with the rule-based result. The merge adds exactly one per filled field and per rejected suggestion, so these are those two counts.
+- What P5 checks, per field of the merged result: P1 (a `filled` value validates back to itself; `flagged` has an error; `empty` only when not required, never with an error); a field filled from a typed, spoken or stitch-code answer, every signature field and every photo field is exactly as before; a field that went from `empty` or `flagged` to `filled` has provenance `llm`, ends with `llm-suggestion`, and holds the validated form of the first non-blank value the model suggested for it, so nothing is made up; any other field is unchanged except for at most one added `llm-rejected`. "Never changes a field whose provenance is typed, voice or stitch-code" is read together with merge rule 2 as "filled with that provenance": a `flagged` field also carries the provenance of the answer the user gave, and Req 5.3 lets a suggestion fill it.
+- The P1 generators also make answers with source `llm`, so the property tells a fill apart by the status change, not by the provenance.
+- The P1 re-check also calls `mergeSuggestions` directly, with suggestion lists the parser would never produce (values of any length, notes, value and note together) and a rule-based result with any subset of its entries removed, which exercises rule 5.
+- A sampling check (300 cases, seed 17) keeps the properties from passing vacuously. On this machine it gave 146 `ok` and 154 "bad-output" outcomes, 58 fields filled, 103 suggestions rejected, 108 value suggestions aimed at protected fields, 37 flagged fields filled and 149 notes; the test only requires each count to be above zero.
+- Writing P5 corrected one claim from task 4: the first draft said the merged result lists fields in form order. The property generated field IDs such as `"0"` and `"4"`, which JavaScript lists before other keys, so the doc comment, the rule 5 note above and the tests now promise one entry per field and compare sorted keys.
 
 ## Correctness properties
 
@@ -210,7 +224,7 @@ This spec owns P5.
 | ID | Property | Requirement IDs | Owner spec | Test file |
 |---|---|---|---|---|
 | P1 | After `mergeSuggestions`, every required field is still filled with a valid value or flagged. | field-mapping 5.1; validation 4.1 | field-mapping | `src/llm/merge.property.test.ts` re-checks it |
-| P5 | For any string `s` returned by a fake provider (`fc.string()`, JSON text built from `fc.record` objects with random field IDs and values, and truncated JSON), `assist` never yields a field `filled` with a value that fails `validateField`, never changes a field whose provenance is `typed`, `voice` or `stitch-code`, and never throws. | llm-adapter 5.1, 5.2, 5.3, 5.5 | llm-adapter | `src/llm/merge.property.test.ts` |
+| P5 | For any string `s` returned by a fake provider (`fc.string()`, JSON text built from `fc.record` objects with random field IDs and values, and truncated JSON), `assist` (through `assistWithProvider`, see the task 5 conventions) never yields a field `filled` with a value that fails `validateField`, never changes a field whose provenance is `typed`, `voice` or `stitch-code`, and never throws. | llm-adapter 5.1, 5.2, 5.3, 5.5 | llm-adapter | `src/llm/merge.property.test.ts` |
 
 P2, P3 and P4 are owned by validation, stitch-code and field-mapping.
 

@@ -71,5 +71,6 @@ export type FallbackReason = 'timeout' | 'network' | 'http' | 'warming-up' | 'ba
 /** What `assist` returns. Every outcome carries a complete mapping result the UI can show. */
 export type LlmOutcome =
   | { kind: 'off'; result: MappingResult }
-  | { kind: 'ok'; result: MappingResult; accepted: number; rejected: number }
+  // `notes` are the model's warnings for fields of the form, kept out of `result` (see LlmNote).
+  | { kind: 'ok'; result: MappingResult; accepted: number; rejected: number; notes: LlmNote[] }
   | { kind: 'fallback'; result: MappingResult; reason: FallbackReason };

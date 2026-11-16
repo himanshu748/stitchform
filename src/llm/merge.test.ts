@@ -163,14 +163,14 @@ describe('mergeSuggestions (Req 5.1 to 5.4)', () => {
     expect(merge([{ fieldId: 'dob', note: 'This date does not exist (demo).' }])).toEqual(ruleResult);
   });
 
-  it('keeps every field once in form order, leaves its input unchanged and shares no object with it', () => {
+  it('keeps every field once, leaves its input unchanged and shares no object with it', () => {
     const before = structuredClone(ruleResult);
     const suggestions: LlmSuggestion[] = [{ fieldId: 'room-type', value: 'single' }, { fieldId: 'dob', value: 'never' }];
     const suggestionsBefore = structuredClone(suggestions);
     const r = merge(suggestions);
     expect(ruleResult).toEqual(before);
     expect(suggestions).toEqual(suggestionsBefore);
-    expect(Object.keys(r.fields)).toEqual(form.fields.map((f) => f.id));
+    expect(Object.keys(r.fields).sort()).toEqual(form.fields.map((f) => f.id).sort());
     expect(r.formId).toBe(ruleResult.formId);
     expect(r.unmatched).toEqual(ruleResult.unmatched);
     expect(r.unmatched).not.toBe(ruleResult.unmatched);

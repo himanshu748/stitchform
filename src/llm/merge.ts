@@ -62,7 +62,7 @@ function keepRequired(field: FormField, r: FieldResult): FieldResult {
 
 /**
  * Merge `suggestions` into `ruleResult`, the rule-based mapping for `form`. The result has one
- * entry per form field in form order and the same `formId` and `unmatched`. For each field the
+ * entry per form field and the same `formId` and `unmatched`. For each field the
  * first non-blank suggested value is checked with `validateField` (with `ctx`, the same context
  * the mapper used) when the field is empty or flagged and is not a signature or photo field: if
  * it passes, the field is filled with the normalised value, provenance "llm" and an

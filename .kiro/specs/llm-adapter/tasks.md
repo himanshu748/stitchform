@@ -14,7 +14,7 @@ Each task is one commit. No task deploys, serves or runs the Modal app.
 - [x] 4. Implement `mergeSuggestions` with unit tests
   - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
-- [ ] 5. Property test P5 (and P1 re-check) with a fake provider
+- [x] 5. Property test P5 (and P1 re-check) with a fake provider
   - `src/llm/merge.property.test.ts`
   - _Requirements: 5.1, 5.2, 5.3, 5.5; Property: P5, P1_
 
