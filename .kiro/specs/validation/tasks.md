@@ -5,7 +5,7 @@ Each task is one commit. Run `npm run typecheck` and `npm test` before committin
 - [x] 1. Add `digits.ts` (Devanagari and ASCII digit conversion) with unit tests
   - _Requirements: 1.2, 3.2_
 
-- [ ] 2. Add `issues.ts` with the `IssueCode` union and severities, plus EN and HI message files and a completeness test
+- [x] 2. Add `issues.ts` with the `IssueCode` union and severities, plus EN and HI message files and a completeness test
   - _Requirements: 5.1, 5.2_
 
 - [ ] 3. Implement `formatDate`, `isValidCalendarDate` and numeric `parseDate` with unit tests

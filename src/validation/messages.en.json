@@ -1,0 +1,16 @@
+{
+  "required-missing": "This field is required. Please fill it in.",
+  "signature-missing": "This form needs your signature. Please draw or upload it yourself.",
+  "photo-paste-after-print": "Stitchform does not add photos. Paste your photo in this box after printing.",
+  "date-unparsed": "We could not read this date. Please write it as DD/MM/YYYY, for example 05/03/2004.",
+  "date-impossible": "This date does not exist on the calendar. Please check the day and month.",
+  "date-two-digit-year": "The year has only two digits. Please check that the full year is right.",
+  "dob-in-future": "This date of birth is in the future. Please check it.",
+  "dob-implausible": "This date of birth gives an age over 120 years. Please check the year.",
+  "number-invalid": "Please use digits only here.",
+  "choice-unknown": "Please pick one of: {options}.",
+  "checkbox-unknown": "Please answer yes or no.",
+  "free-text-ignored": "You also mentioned this field in a longer answer. The answer to its own question was kept.",
+  "llm-suggestion": "The LLM helper suggested this value. Please check it before printing.",
+  "llm-rejected": "The LLM helper suggested a value that failed the checks, so it was not used."
+}
