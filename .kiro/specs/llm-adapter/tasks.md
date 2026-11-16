@@ -8,7 +8,7 @@ Each task is one commit. No task deploys, serves or runs the Modal app.
 - [x] 2. Implement `buildRequest` (labels and answers only) with a unit test on the serialised keys
   - _Requirements: 3.2_
 
-- [ ] 3. Implement `parseSuggestions` (defensive JSON extraction, caps) with unit tests
+- [x] 3. Implement `parseSuggestions` (defensive JSON extraction, caps) with unit tests
   - _Requirements: 5.5_
 
 - [ ] 4. Implement `mergeSuggestions` with unit tests

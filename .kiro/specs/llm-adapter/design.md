@@ -35,7 +35,7 @@ Because Gemini browser access is not confirmed, the `gemini` provider is designe
 src/llm/
   types.ts            ProviderId, ProviderConfig, LlmRequest (LlmRequestField, LlmRequestAnswer), LlmSuggestion, LlmProvider, FallbackReason, LlmOutcome
   prompt.ts           buildRequest(form, answers) -> LlmRequest (pure; labels and answers only)
-  parse.ts            parseSuggestions(text) -> LlmSuggestion[] (pure, never throws)
+  parse.ts            parseSuggestions(text) -> LlmSuggestion[] (pure, never throws); parseReply(text) -> LlmSuggestion[] | null
   merge.ts            mergeSuggestions(form, ruleResult, suggestions, ctx) -> MappingResult (pure)
   openai-compatible.ts  one HTTP client for modal and ollama (fetch)
   gemini.ts           hidden until confirmed
@@ -184,6 +184,14 @@ Task 2 (`prompt.ts`):
 - Answers are sent in `seq` order with ties in input order, the order `mapAnswers` uses, so the model can tell which answer came last; `seq` and `source` themselves are not sent. `promptedFieldId` is kept only when it names a field of the form. An answer prompted for a field the form does not have goes as free text, which is also how the mapper treats it (it ends up in `unmatched`). Answer text is sent as entered, blank prompted answers included, since a blank answer is how the user clears a field.
 - Each request object is built key by key and never by spreading a `FormField` or an `Answer`. A unit test attaches image, signature-image, stitch-code and passphrase properties to every field and answer and checks that none of them reaches the serialised request. Another test, also run as a fast-check property over the P1 generators, checks that the serialised request has only the allowed key paths (`fields[].id`, `label`, `type`, `required`, `choices`; `answers[].text`, `promptedFieldId`, `lang`) and only string or boolean values, so no bounding box, page number or order number can be in it.
 - `buildRequest` is internal to the llm module; `index.ts` does not export it.
+
+Task 3 (`parse.ts`):
+
+- "First JSON object" is taken literally: from the first `{` in the reply to the `}` that closes it, skipping braces inside JSON strings, then `JSON.parse` (no `eval`). Only the first `{` is tried, so the scan is one pass over the text. A reply with a stray `{` in its prose before the JSON counts as bad output.
+- Shape: an object with `suggestions`, `warnings` or both, each a list of objects with a string `fieldId` and a string `value` (suggestions) or `note` (warnings). A missing list counts as empty, because Ollama gets no schema and may leave an empty list out. Any other mismatch anywhere in the reply (a value that is not a string, a `null` list, an item that is not an object) makes the whole reply count as no suggestions. Other keys are ignored, and only own properties are read, so a `__proto__` key in the JSON supplies nothing. Each item returned is a new object with only `fieldId` and `value`, or only `fieldId` and `note`, suggestions first, each list in reply order.
+- Caps: a value or note longer than 200 UTF-16 code units (the unit of the validators' input limit) drops that item and keeps the others. It is never cut, because a cut value could still pass its validator. At most 100 items are kept, counted after over-long items are dropped.
+- Strings are returned as sent, blank ones included; `mergeSuggestions` normalises and validates them.
+- Besides `parseSuggestions(text) -> LlmSuggestion[]`, which gives `[]` for anything unexpected (Req 5.5), `parse.ts` exports `parseReply(text) -> LlmSuggestion[] | null`. `null` means "not the expected JSON", and `[]` means a valid reply with nothing in it; `parseSuggestions` is `parseReply(text) ?? []`. The adapter uses `parseReply`, so a model that validly has nothing to add is not reported as a reply that could not be used. Input that is not a string also gives `null`, so a client that resolves with something else cannot make parsing throw.
 
 ## Correctness properties
 
