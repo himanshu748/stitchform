@@ -14,7 +14,7 @@ Each task is one commit. New npm dependencies go into README "Pre-existing work"
 - [x] 4. Add `payload.ts` and `createStitchCode` / `openStitchCode`, with an example test that the header holds 600,000
   - _Requirements: 3.1, 3.2, 5.1, 5.2, 5.3_
 
-- [ ] 5. Property test P3: round-trip, wrong passphrase and single-byte tampering
+- [x] 5. Property test P3: round-trip, wrong passphrase and single-byte tampering
   - `src/stitch-code/round-trip.property.test.ts`, `fc.asyncProperty`
   - _Requirements: 5.1, 5.2, 2.3, 3.4; Property: P3_
 

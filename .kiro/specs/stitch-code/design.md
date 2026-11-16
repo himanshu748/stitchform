@@ -97,6 +97,13 @@ Tasks 2 to 4:
 - `refillForm(form, opened, signatures, ctx, confirmedOtherForm = false)` covers Req 5.1 and 5.3. It runs `mapAnswers` (which takes the `ValidationContext`, see the field-mapping conventions), or returns `{ status: "other-form", formId }` so the UI can name the form and ask first. After the user confirms, answers for fields the form does not have go to `unmatched`.
 - The create and open code lives in `stitch-code.ts`, and `index.ts` only re-exports the public API, like the other modules. The test-only `sealWithIterations(payload, passphrase, iterations)` and `openWithBounds(bytes, passphrase, bounds)` are exported from `stitch-code.ts` but not from `index.ts`, and a unit test checks the list of public exports.
 
+Task 5 (P3 as implemented in `src/stitch-code/round-trip.property.test.ts`):
+
+- The round-trip part allows sealing to refuse: `sealWithIterations` returns `too-large` exactly when the payload JSON is over 64 KiB (Req 3.4), and otherwise opening with the same passphrase returns exactly the form ID and answers. About 1 in 20 generated answers is a long text (1,000 to 30,000 copies of 1 to 3 graphemes), so some payloads go past the limit. A sampling check in the same file confirms that both sides of the limit are reached, and that the answers include text beyond ASCII and outside the Basic Multilingual Plane.
+- "Any `q !== p`" uses the normalised form, as settled for task 3: `q` is a near miss of `p` (a character added, a code point dropped, upper case) or any other passphrase, kept only if `normalisePassphrase(q)` differs from `normalisePassphrase(p)`. Generated passphrases are well-formed Unicode, as people type them.
+- "Flipping any one byte" XORs one byte with any non-zero mask, and the property also checks which failure comes back: a change to bytes 0 to 7 (magic, version, KDF ID, iteration count) gives `not-stitch-code`, because the test bounds are exactly 1,000 to 1,000, so any other count is out of range; a change to the salt, IV, ciphertext or tag gives `cannot-open`.
+- The property runs `sealWithIterations` and `openWithBounds` with 1,000 iterations, the test-only shortcut described below. The production count, 600,000, is checked by the example test in `stitch-code.test.ts`.
+
 ## Correctness properties
 
 This spec owns P3.
