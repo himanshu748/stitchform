@@ -8,7 +8,7 @@ Each task is one commit. New npm dependencies go into README "Pre-existing work"
 - [x] 2. Add `compress.ts` (deflate-raw both ways, 64 KiB output cap) with unit tests
   - _Requirements: 3.3, 3.4_
 
-- [ ] 3. Add `crypto.ts`: PBKDF2-HMAC-SHA256 key derivation and AES-GCM seal/open with header as additional data
+- [x] 3. Add `crypto.ts`: PBKDF2-HMAC-SHA256 key derivation and AES-GCM seal/open with header as additional data
   - _Requirements: 2.1, 2.2, 2.3_
 
 - [ ] 4. Add `payload.ts` and `createStitchCode` / `openStitchCode`, with an example test that the header holds 600,000
