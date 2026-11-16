@@ -143,12 +143,22 @@ Official sites were read directly for the rest (cited in each design.md): MDN (W
 
 ## Property-based testing
 
-fast-check 4.10.2 is set up (`vitest.setup.ts`, `FC_NUM_RUNS`). So far the only properties are two on the commit-guard command classifier in `scripts/hooks/guard-rules.test.mjs`:
+fast-check 4.10.2 is set up (`vitest.setup.ts`, `FC_NUM_RUNS`). Two properties cover the commit-guard command classifier in `scripts/hooks/guard-rules.test.mjs`:
 
 - Appending `&& git push` to any chain of harmless commands always classifies as "publish".
 - A plain `git commit -m "<message>"` is always "commit", whatever the message says (so a commit message that mentions `git push` does not trip the guard).
 
-Neither has found a bug yet. The product properties (P1 required fields filled or flagged, P2 date round-trip, P3 stitch-code round-trip, P4 mapping idempotence, P5 LLM output never marks an invalid value as filled) come with the pure-logic features in M3 to M6.
+Neither has found a bug yet.
+
+### Product properties implemented so far
+
+Each one is tied to requirement IDs in the spec that owns it (the "Correctness properties" tables in `.kiro/specs/field-mapping/design.md` and `.kiro/specs/validation/design.md`). `npm test` runs them at fast-check's default 100 cases; commit-guard runs them at 20.
+
+| Property | File | What it checks | Result so far |
+|---|---|---|---|
+| P2 date round-trip (validation 1.1, 1.2, 1.4, 1.8) | `src/validation/dates.property.test.ts` | For any valid `{ y, m, d }` in 1900 to 2099, any of the five four-digit-year formats and ASCII or Devanagari digits, `parseDate(formatDate(d, f, digits))` returns `d`. `D-M-YY` is checked for role "other" and years 2000 to 2099. Two extra checks: a parsed date's canonical DD/MM/YYYY value parses back to the same date, and any written day/month/year numbers either parse to exactly those numbers or give `date-impossible` (never a different date). | Passed at 100 cases and at 20,000 cases (`FC_NUM_RUNS=20000`). No bug found. |
+
+P1 (required fields filled or flagged), P4 (mapping idempotence) and the validator properties follow with the mapper and `validateField`. P3 (stitch-code round-trip) and P5 (LLM output never marks an invalid value as filled) come with the stitch-code and llm-adapter features.
 
 ## Kiro powers
 

@@ -12,7 +12,7 @@ Each task is one commit. Run `npm run typecheck` and `npm test` before committin
   - Leap years, impossible dates, mixed separators rejected
   - _Requirements: 1.1, 1.4, 1.5, 1.7_
 
-- [ ] 4. Property test P2: date round-trip for every numeric format and both digit sets
+- [x] 4. Property test P2: date round-trip for every numeric format and both digit sets
   - `src/validation/dates.property.test.ts`
   - _Requirements: 1.1, 1.2, 1.4, 1.8; Property: P2_
 
