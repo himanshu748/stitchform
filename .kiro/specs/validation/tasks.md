@@ -8,7 +8,7 @@ Each task is one commit. Run `npm run typecheck` and `npm test` before committin
 - [x] 2. Add `issues.ts` with the `IssueCode` union and severities, plus EN and HI message files and a completeness test
   - _Requirements: 5.1, 5.2_
 
-- [ ] 3. Implement `formatDate`, `isValidCalendarDate` and numeric `parseDate` with unit tests
+- [x] 3. Implement `formatDate`, `isValidCalendarDate` and numeric `parseDate` with unit tests
   - Leap years, impossible dates, mixed separators rejected
   - _Requirements: 1.1, 1.4, 1.5, 1.7_
 
