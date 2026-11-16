@@ -25,7 +25,10 @@ export type ValidationOutcome =
  */
 export const SIGNATURE_PRESENT = 'signed';
 
-/** Longest number, choice or checkbox answer worth parsing. Longer input is invalid for those types. */
+/**
+ * Longest number, choice or checkbox answer worth parsing. Longer input is invalid for those
+ * types, except that a choice field accepts input as long as its longest option label.
+ */
 const MAX_PARSED_INPUT = 200;
 
 /**
@@ -94,7 +97,9 @@ function onlyMatch(options: readonly { label: string; key: string }[], test: (o:
 
 function validateChoice(field: FormField, s: string): ValidationOutcome {
   const options = distinctOptions(field);
-  const key = s.length > MAX_PARSED_INPUT ? '' : wordKey(s);
+  // A printed option may be longer than the parsing limit; it must still validate to itself (Req 3.5).
+  const limit = options.reduce((n, o) => Math.max(n, normaliseText(o.label).length), MAX_PARSED_INPUT);
+  const key = s.length > limit ? '' : wordKey(s);
   const match =
     key === ''
       ? null

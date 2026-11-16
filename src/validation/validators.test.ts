@@ -130,6 +130,15 @@ describe('choice (Req 3.3)', () => {
       issues: [{ fieldId: band.id, code: 'choice-unknown', severity: 'error', params: { options: '' } }],
     });
   });
+
+  it('accepts an option label longer than 200 characters back as itself (Req 3.5)', () => {
+    // Shape of the counterexample the idempotence property found: an option with a long hint.
+    const long = `Band A (${'demo hint '.repeat(25).trim()})`;
+    const f = field('choice', { choices: ['Band B (demo)', long] });
+    expect(validateField(f, 'band a', ctx)).toEqual({ ok: true, value: long, issues: [] });
+    expect(validateField(f, long, ctx)).toEqual({ ok: true, value: long, issues: [] });
+    expect(codes(validateField(f, `${long} extra`, ctx))).toEqual(['error:choice-unknown']);
+  });
 });
 
 describe('checkbox (Req 3.4)', () => {
