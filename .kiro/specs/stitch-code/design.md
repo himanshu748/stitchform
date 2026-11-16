@@ -35,7 +35,7 @@ src/stitch-code/
   qr.ts            toQrDataUrl(bytes) -> string | "too-large"; decodeQr(imageData) (browser only)
   stitch-code.ts   createStitchCode, openStitchCode, refillForm (+ test-only sealWithIterations, openWithBounds)
   index.ts         public API: re-exports createStitchCode, openStitchCode, refillForm
-public/wordlists/eff_large_wordlist.txt, public/wordlists/common-passwords.txt
+public/wordlists/eff_large_wordlist.txt, public/wordlists/common-passwords.txt, public/wordlists/SecLists-LICENSE.txt
 ```
 
 `crypto.ts`, `compress.ts`, `format.ts`, `passphrase.ts` and `payload.ts` take no DOM dependency, so P3 runs in Vitest.
@@ -103,6 +103,11 @@ Task 5 (P3 as implemented in `src/stitch-code/round-trip.property.test.ts`):
 - "Any `q !== p`" uses the normalised form, as settled for task 3: `q` is a near miss of `p` (a character added, a code point dropped, upper case) or any other passphrase, kept only if `normalisePassphrase(q)` differs from `normalisePassphrase(p)`. Generated passphrases are well-formed Unicode, as people type them.
 - "Flipping any one byte" XORs one byte with any non-zero mask, and the property also checks which failure comes back: a change to bytes 0 to 7 (magic, version, KDF ID, iteration count) gives `not-stitch-code`, because the test bounds are exactly 1,000 to 1,000, so any other count is out of range; a change to the salt, IV, ciphertext or tag gives `cannot-open`.
 - The property runs `sealWithIterations` and `openWithBounds` with 1,000 iterations, the test-only shortcut described below. The production count, 600,000, is checked by the example test in `stitch-code.test.ts`.
+
+Task 6 (bundled word lists):
+
+- Both files are byte-for-byte copies of their sources, and `src/stitch-code/wordlists.test.ts` checks their SHA-256 (also listed in README "Pre-existing work"). The EFF file keeps its original lines, `<five dice digits><tab><word>`, so `passphrase.ts` parses that format (task 7) rather than the repo shipping an edited copy. The SecLists list is pinned to commit `913b327` (2026-09-08), renamed to `common-passwords.txt`, and its MIT licence text ships next to it as `public/wordlists/SecLists-LICENSE.txt`, because the MIT licence asks for the notice to travel with copies.
+- The SecLists list has 10,001 entries (all lower case, no duplicates), and only one of them, `films+pic+galeries`, has 16 or more characters. Because Req 1.3 already rejects anything shorter, Req 1.4 with this list rejects only that one entry in practice. The check is kept as specified; a longer list could replace the file later without code changes.
 
 ## Correctness properties
 

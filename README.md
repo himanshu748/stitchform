@@ -96,7 +96,16 @@ Third-party npm packages (development only; none are bundled into the app yet):
 
 Their own dependencies are pinned in `package-lock.json`.
 
-Chosen in the specs for later milestones (not installed or downloaded yet; each moves into the table above in the commit that adds it):
+Data files in `public/wordlists/`, copied unchanged from their sources (a unit test, `src/stitch-code/wordlists.test.ts`, checks the SHA-256 values below):
+
+| File | Source | Version | Licence | Used for | SHA-256 |
+|---|---|---|---|---|---|
+| `eff_large_wordlist.txt` | [EFF large wordlist](https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt) by the Electronic Frontier Foundation, 7,776 words | 2016 | CC BY 4.0 ([EFF copyright page](https://www.eff.org/copyright)) | generated passphrases | `addd35536511597a02fa0a9ff1e5284677b8883b83e986e43f15a3db996b903e` |
+| `common-passwords.txt` | `Passwords/Common-Credentials/10k-most-common.txt` from [SecLists](https://github.com/danielmiessler/SecLists) by Daniel Miessler and contributors, 10,001 entries, renamed | commit `913b327` (2026-09-08) | MIT, licence text in `public/wordlists/SecLists-LICENSE.txt` | rejecting common custom passphrases | `68782d6a4a19a4768d5f15dd66bd534e7a33055cc755411e33f16d18c50fdcce` |
+
+Licences checked 2026-11-16: the EFF copyright page says original material on its website may be distributed under the Creative Commons Attribution 4.0 International License; the SecLists licence comes from the GitHub licence API.
+
+Chosen in the specs for later milestones (not installed or downloaded yet; each moves into a table above in the commit that adds it):
 
 | Item | Version | Licence | Used for | Spec |
 |---|---|---|---|---|
@@ -107,8 +116,6 @@ Chosen in the specs for later milestones (not installed or downloaded yet; each 
 | Noto Sans Devanagari ([notofonts/devanagari](https://github.com/notofonts/devanagari)) | 2.007 | SIL OFL 1.1 | Hindi text | pdf-regeneration |
 | `qrcode` | 1.5.4 | MIT | stitch-code QR encoding | stitch-code |
 | `jsqr` | 1.4.0 | Apache-2.0 | stitch-code QR decoding | stitch-code |
-| [EFF large wordlist](https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt) | 2016 | CC BY 4.0 ([EFF copyright page](https://www.eff.org/copyright)) | generated passphrases | stitch-code |
-| SecLists `10k-most-common.txt` ([danielmiessler/SecLists](https://github.com/danielmiessler/SecLists)) | n/a | MIT | rejecting common custom passphrases | stitch-code |
 | [Qwen/Qwen3-4B-Instruct-2507](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507) | revision `cdbee75` | Apache-2.0 | optional LLM in the Modal app (not shipped in the web app) | llm-adapter |
 | vLLM ([vllm-project/vllm](https://github.com/vllm-project/vllm)) and the [Modal vLLM example](https://modal.com/docs/examples/vllm_inference) ([modal-labs/modal-examples](https://github.com/modal-labs/modal-examples)) | vLLM 0.21.0 | Apache-2.0 (vLLM), MIT (modal-examples) | optional Modal app, adapted from Modal's example | llm-adapter |
 

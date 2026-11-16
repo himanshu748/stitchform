@@ -18,7 +18,7 @@ Each task is one commit. New npm dependencies go into README "Pre-existing work"
   - `src/stitch-code/round-trip.property.test.ts`, `fc.asyncProperty`
   - _Requirements: 5.1, 5.2, 2.3, 3.4; Property: P3_
 
-- [ ] 6. Add the EFF large wordlist and the SecLists common-password list under `public/wordlists/`, with README attribution
+- [x] 6. Add the EFF large wordlist and the SecLists common-password list under `public/wordlists/`, with README attribution
   - _Requirements: 1.1, 1.4_
 
 - [ ] 7. Implement `generatePassphrase` (rejection sampling) and `checkCustomPassphrase` with unit tests
