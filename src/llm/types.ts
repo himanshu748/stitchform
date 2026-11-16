@@ -48,6 +48,16 @@ export interface LlmSuggestion {
   note?: string;
 }
 
+/**
+ * A model's note about a possible mistake in one field of the form (Req 5.3). It is model text
+ * and may quote an answer, so it is kept out of issues, stitch codes and PDFs, is never logged,
+ * and is shown with textContent only.
+ */
+export interface LlmNote {
+  fieldId: string;
+  note: string;
+}
+
 /** A provider client. Only adapter.ts calls one (Req 1.2). */
 export interface LlmProvider {
   readonly id: Exclude<ProviderId, 'none'>;

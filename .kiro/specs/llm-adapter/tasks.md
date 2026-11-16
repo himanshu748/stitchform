@@ -11,7 +11,7 @@ Each task is one commit. No task deploys, serves or runs the Modal app.
 - [x] 3. Implement `parseSuggestions` (defensive JSON extraction, caps) with unit tests
   - _Requirements: 5.5_
 
-- [ ] 4. Implement `mergeSuggestions` with unit tests
+- [x] 4. Implement `mergeSuggestions` with unit tests
   - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
 - [ ] 5. Property test P5 (and P1 re-check) with a fake provider

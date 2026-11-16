@@ -33,10 +33,10 @@ Because Gemini browser access is not confirmed, the `gemini` provider is designe
 
 ```
 src/llm/
-  types.ts            ProviderId, ProviderConfig, LlmRequest (LlmRequestField, LlmRequestAnswer), LlmSuggestion, LlmProvider, FallbackReason, LlmOutcome
+  types.ts            ProviderId, ProviderConfig, LlmRequest (LlmRequestField, LlmRequestAnswer), LlmSuggestion, LlmNote, LlmProvider, FallbackReason, LlmOutcome
   prompt.ts           buildRequest(form, answers) -> LlmRequest (pure; labels and answers only)
   parse.ts            parseSuggestions(text) -> LlmSuggestion[] (pure, never throws); parseReply(text) -> LlmSuggestion[] | null
-  merge.ts            mergeSuggestions(form, ruleResult, suggestions, ctx) -> MappingResult (pure)
+  merge.ts            mergeSuggestions(form, ruleResult, suggestions, ctx) -> MappingResult (pure); collectNotes(form, suggestions) -> LlmNote[]
   openai-compatible.ts  one HTTP client for modal and ollama (fetch)
   gemini.ts           hidden until confirmed
   key-store.ts        memory by default, optional localStorage with forget
@@ -192,6 +192,16 @@ Task 3 (`parse.ts`):
 - Caps: a value or note longer than 200 UTF-16 code units (the unit of the validators' input limit) drops that item and keeps the others. It is never cut, because a cut value could still pass its validator. At most 100 items are kept, counted after over-long items are dropped.
 - Strings are returned as sent, blank ones included; `mergeSuggestions` normalises and validates them.
 - Besides `parseSuggestions(text) -> LlmSuggestion[]`, which gives `[]` for anything unexpected (Req 5.5), `parse.ts` exports `parseReply(text) -> LlmSuggestion[] | null`. `null` means "not the expected JSON", and `[]` means a valid reply with nothing in it; `parseSuggestions` is `parseReply(text) ?? []`. The adapter uses `parseReply`, so a model that validly has nothing to add is not reported as a reply that could not be used. Input that is not a string also gives `null`, so a client that resolves with something else cannot make parsing throw.
+
+Task 4 (`merge.ts`):
+
+- The model's warnings are not merged into the `MappingResult`. `collectNotes(form, suggestions) -> LlmNote[]` returns them on their own (`LlmNote` is `{ fieldId, note }` in `types.ts`), and the adapter hands them to the UI with the outcome (task 5). The reason: an issue never carries the answer value (validation Req 5.1), and a model note may quote one. Kept out of the result, a note cannot reach an issue, a stitch code (built from the result) or a PDF, and no new issue code is needed. `collectNotes` keeps notes in reply order for fields the form has (Req 5.2), normalises them like answer text, and drops blank and repeated notes. A note may be about any field, one the user filled included, since it changes nothing in the result.
+- Rules 2 and 3 read together: only an `empty` or `flagged` field takes a suggestion. Every `filled` field is kept as it was, whatever its provenance: `typed`, `voice` and `stitch-code` (Req 5.3), but also `llm` from an earlier merge and a signature filled from a drawn one. A value suggested for such a field is dropped without a note or an issue. A `flagged` field whose invalid text the user typed may be filled, as Req 5.3 allows; like any `filled` result from the mapper it then has no `raw`, and the user's answer itself stays in the answer list.
+- For each field only the first suggestion with a non-blank value is tried. Blank values are skipped (no `llm-rejected`, since a blank is no suggestion), and later values for the same field are ignored.
+- A value suggested for a `signature` or `photo` field is dropped without an issue (rule 4). The system prompt tells the model not to suggest them, and an `llm-rejected` issue there would hint that a suggested signature could ever be accepted.
+- Pass: the field gets the validator's issues for the new value (for example `date-two-digit-year`) followed by `llm-suggestion`; the field's old issues, which were about the old answer, go. Fail: the field keeps its own issues and gets `llm-rejected`; the validator's error for the model's value is not added, because it is not about anything the user entered. Neither `llm-suggestion` nor `llm-rejected` has parameters, so no suggested value reaches an issue.
+- Rule 5: the result is built from `form.fields`, one entry per field in form order, and an entry for an ID the form does not have is dropped. A field with no entry in the rule-based result (only possible for a result built by hand) starts as `empty`, and a required field other than a photo that is still `empty` after the merge becomes `flagged` with `required-missing`, or `signature-missing` for a signature. Entries are looked up as own properties only, so a field ID such as `constructor` cannot find `Object.prototype.constructor`.
+- `mergeSuggestions` copies every entry and its issue list, so neither input changes and the result shares no object with `ruleResult`. It returns only the `MappingResult`; the `accepted` and `rejected` counts of an `ok` outcome are worked out by the adapter (task 5).
 
 ## Correctness properties
 
