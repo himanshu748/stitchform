@@ -1,0 +1,15 @@
+{
+  "note": "Words accepted for checkbox and choice fields, hand-written for Stitchform. Compared after trimming, lower-casing and foldDevanagari. \"options\" maps an option label, exactly as printed on a fictional sample form, to other ways of saying it in English or Hindi. The course options of the Lantern Hill sample are added with the sample templates.",
+  "checkbox": {
+    "yes": ["yes", "y", "true", "tick", "ticked", "checked", "agree", "i agree", "ok", "हाँ", "हा", "जी हाँ", "हाँ जी", "जी", "सहमत", "ठीक है"],
+    "no": ["no", "n", "false", "not ticked", "unticked", "unchecked", "disagree", "i do not agree", "नहीं", "नही", "ना", "जी नहीं", "असहमत"]
+  },
+  "options": {
+    "Sample ID card": ["id card", "sample id", "नमूना आईडी कार्ड", "आईडी कार्ड", "पहचान पत्र"],
+    "Sample student card": ["student card", "student id", "नमूना छात्र कार्ड", "छात्र कार्ड", "स्टूडेंट कार्ड"],
+    "Sample other document": ["other document", "other", "नमूना अन्य दस्तावेज़", "अन्य दस्तावेज़", "अन्य"],
+    "Band A (demo)": ["a", "बैंड ए", "वर्ग ए"],
+    "Band B (demo)": ["b", "बैंड बी", "वर्ग बी"],
+    "Band C (demo)": ["c", "बैंड सी", "वर्ग सी"]
+  }
+}

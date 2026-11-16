@@ -23,7 +23,7 @@ Each task is one commit. Run `npm run typecheck` and `npm test` before committin
   - Examples: "5 March 2004", "March 5, 2004", "5 मार्च 2004", "पाँच मार्च दो हज़ार चार"
   - _Requirements: 1.3_
 
-- [ ] 7. Implement `validateField` for text, number, choice, checkbox, signature and required checks
+- [x] 7. Implement `validateField` for text, number, choice, checkbox, signature and required checks
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3_
 
 - [ ] 8. Property tests for validator idempotence and totality

@@ -18,7 +18,8 @@ src/validation/
   hindi-numbers.ts Hindi number words 0 to 99 (data), parseHindiNumber
   months.ts        English and Hindi month names and short forms (data)
   dates.ts         parseDate, formatDate, isValidCalendarDate, resolveTwoDigitYear
-  validators.ts    validateField and one validator per FieldType
+  validators.ts    validateField and one validator per FieldType, normaliseText, SIGNATURE_PRESENT
+  choice-words.json  yes/no words (EN, HI) and other ways to say sample-form options (data)
   issues.ts        IssueCode union, severity table
   messages.en.json, messages.hi.json   plain-language message per IssueCode
   index.ts
@@ -52,6 +53,13 @@ export function formatDate(d: CalendarDate, f: DateFormat, digits?: "ascii" | "d
 ```
 
 `llm-suggestion` and `llm-rejected` are defined here because the issue list is shared, but only the llm-adapter emits them.
+
+Conventions settled during implementation:
+
+- `{ ok: true, value: "" }` means "no answer". It is returned only for fields that are not required, and for `photo` fields, which always get `photo-paste-after-print` (field-mapping Req 5.5). The mapper turns it into status `empty`.
+- A signature is an image, not text. For `signature` fields the mapper passes `SIGNATURE_PRESENT` (`"signed"`) as `raw` when the user drew or uploaded one, and `""` otherwise. Any other text counts as no signature, so typing a name never creates one (Req 4.3).
+- Choice matching (Req 3.3) tries, in order, and only accepts a single match: the option label itself (case-insensitive, Devanagari folded), the label without a trailing "(...)" hint ("Band A" for "Band A (demo)"), then the synonyms listed for that option in `choice-words.json`. When two options have the same key only the first is used, so the returned label always validates to itself (Req 3.5).
+- Text normalisation removes control characters other than whitespace before collapsing whitespace, and applies NFC last.
 
 ## Date parsing rules
 

@@ -7,3 +7,5 @@ export type { CalendarDate, DateFormat, ParseDateOptions, ParseDateResult } from
 export { DATE_FORMATS, ageOn, canonicalDate, checkDateOfBirth, compareDates, formatDate, isValidCalendarDate, parseDate, resolveTwoDigitYear } from './dates';
 export { HINDI_NUMBER_WORDS, foldDevanagari, parseHindiNumber } from './hindi-numbers';
 export { MONTH_NAMES, monthFromName } from './months';
+export type { ValidationContext, ValidationOutcome } from './validators';
+export { SIGNATURE_PRESENT, normaliseText, validateField } from './validators';
