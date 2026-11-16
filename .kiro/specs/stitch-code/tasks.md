@@ -11,7 +11,7 @@ Each task is one commit. New npm dependencies go into README "Pre-existing work"
 - [x] 3. Add `crypto.ts`: PBKDF2-HMAC-SHA256 key derivation and AES-GCM seal/open with header as additional data
   - _Requirements: 2.1, 2.2, 2.3_
 
-- [ ] 4. Add `payload.ts` and `createStitchCode` / `openStitchCode`, with an example test that the header holds 600,000
+- [x] 4. Add `payload.ts` and `createStitchCode` / `openStitchCode`, with an example test that the header holds 600,000
   - _Requirements: 3.1, 3.2, 5.1, 5.2, 5.3_
 
 - [ ] 5. Property test P3: round-trip, wrong passphrase and single-byte tampering

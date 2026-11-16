@@ -31,9 +31,10 @@ src/stitch-code/
   passphrase.ts    generatePassphrase(words, rng), checkCustomPassphrase(p, commonSet) (pure)
   crypto.ts        deriveKey, seal, open (Web Crypto, runs in browser and Node 22)
   compress.ts      deflateRaw, inflateRaw with a 64 KiB output cap
-  payload.ts       toPayload(formId, answers), fromPayload(bytes)
+  payload.ts       payloadFromResult(result), toPayload(formId, answers), fromPayload(bytes), toAnswers(payload)
   qr.ts            toQrDataUrl(bytes) -> string | "too-large"; decodeQr(imageData) (browser only)
-  index.ts         createStitchCode, openStitchCode
+  stitch-code.ts   createStitchCode, openStitchCode, refillForm (+ test-only sealWithIterations, openWithBounds)
+  index.ts         public API: re-exports createStitchCode, openStitchCode, refillForm
 public/wordlists/eff_large_wordlist.txt, public/wordlists/common-passwords.txt
 ```
 
@@ -82,6 +83,19 @@ Draw a `Uint16Array(1)` with `getRandomValues`; accept values below 62,208 (8 x 
 | Camera denied or insecure context | `NotAllowedError`, `navigator.mediaDevices` undefined | offer image upload or file instead (4.3) |
 
 Nothing is logged except error codes (steering: no answers or passphrases in logs).
+
+## Conventions settled during implementation
+
+Tasks 2 to 4:
+
+- `inflateRaw` gives `corrupt` for invalid, truncated or empty input. Bytes after the final deflate block are an error in the Compression Standard, but Node 22.14 ignores them (checked locally), so the code does not rely on that check. This does not matter for stitch codes, because inflation only runs on bytes that passed the AES-GCM tag check.
+- `deflateRaw` refuses plaintext over 64 KiB with `too-large`, so the app never creates a stitch code that the 64 KiB cap would stop it from opening. `createStitchCode` then returns `{ ok: false, code: "too-large" }` before any key is derived.
+- `deriveKey` turns the passphrase into key material as `passphrase.normalize("NFC").trim()` (`normalisePassphrase`), the same normalisation as Req 1.3. A passphrase typed with decomposed accents or a stray space at the end still opens the code; case and inner spaces still count. So in P3, "any `q !== p`" means any `q` whose normalised form differs from that of `p`.
+- An empty passphrase (after normalisation) makes `createStitchCode` throw a `RangeError`, a programming error because the passphrase dialog never allows one.
+- `crypto.ts` `open` maps only an `OperationError` from `decrypt` to `cannot-open`. Any other error is a programming error and is thrown.
+- `createStitchCode(result: MappingResult, passphrase)` takes the mapping result and builds the payload with `payloadFromResult`, which uses `toPromptedAnswers`. `openStitchCode(bytes, passphrase)` returns `{ ok: true, formId, answers }`, where `answers` are prompted `Answer`s with `source: "stitch-code"`, `seq` in stored order and `lang` `"hi"` for Devanagari text, or `{ ok: false, code: "not-stitch-code" }` (Req 2.4, 5.4) or `{ ok: false, code: "cannot-open" }` (Req 5.2). A wrong passphrase, a changed byte, plaintext that inflates past 64 KiB and a payload that is not exactly the version 1 shape (an extra key included) all give `cannot-open`. A header that fails its checks is rejected before any key is derived.
+- `refillForm(form, opened, signatures, ctx, confirmedOtherForm = false)` covers Req 5.1 and 5.3. It runs `mapAnswers` (which takes the `ValidationContext`, see the field-mapping conventions), or returns `{ status: "other-form", formId }` so the UI can name the form and ask first. After the user confirms, answers for fields the form does not have go to `unmatched`.
+- The create and open code lives in `stitch-code.ts`, and `index.ts` only re-exports the public API, like the other modules. The test-only `sealWithIterations(payload, passphrase, iterations)` and `openWithBounds(bytes, passphrase, bounds)` are exported from `stitch-code.ts` but not from `index.ts`, and a unit test checks the list of public exports.
 
 ## Correctness properties
 
