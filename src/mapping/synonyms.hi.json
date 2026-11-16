@@ -1,5 +1,6 @@
 {
-  "note": "Hindi label synonyms, hand-written for Stitchform. Same canonical keys as synonyms.en.json. Spellings with and without nukta are both listed because speech recognisers and keyboards differ. Not a complete dictionary.",
+  "note": "Hindi label synonyms, hand-written for Stitchform. Same canonical keys as synonyms.en.json. Spellings with and without nukta are both listed because speech recognisers and keyboards differ. Not a complete dictionary. \"connectors\" are words that join a spoken label to its value (\"मेरा नाम ... है\"); the segmenter strips them from the ends of a value.",
+  "connectors": ["है", "हैं", "था", "थी", "मेरा", "मेरी", "मेरे", "और", "तथा", "का", "की", "के"],
   "labels": {
     "full-name": [
       "पूरा नाम",

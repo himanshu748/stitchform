@@ -1,5 +1,6 @@
 {
-  "note": "English label synonyms, hand-written for Stitchform. Keys are canonical field keys (they match the field IDs of the three fictional sample forms). Not a complete dictionary.",
+  "note": "English label synonyms, hand-written for Stitchform. Keys are canonical field keys (they match the field IDs of the three fictional sample forms). Not a complete dictionary. \"connectors\" are words that join a spoken label to its value (\"my name is ...\"); the segmenter strips them from the ends of a value.",
+  "connectors": ["is", "are", "was", "will be", "my", "and", "also", "please"],
   "labels": {
     "full-name": [
       "full name",

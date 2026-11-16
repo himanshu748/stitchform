@@ -19,7 +19,7 @@ Each task is one commit. Run `npm run typecheck` and `npm test` before committin
   - Synonyms cover every label on the three sample forms
   - _Requirements: 4.2, 4.5_
 
-- [ ] 5. Implement `segment` for free-text answers with unit tests
+- [x] 5. Implement `segment` for free-text answers with unit tests
   - Ambiguous segments go to `unmatched`
   - _Requirements: 4.1, 4.3_
 

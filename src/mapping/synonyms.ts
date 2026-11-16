@@ -8,12 +8,18 @@ import { normaliseLabel } from './normalise-label';
 export interface SynonymFile {
   note: string;
   labels: Record<string, string[]>;
+  connectors: string[];
 }
 
 const FILES: readonly SynonymFile[] = [en, hi];
 
 const KEY_BY_LABEL = new Map<string, string>();
 const LABELS_BY_KEY = new Map<string, string[]>();
+// Connectors as word lists, longest first, from both languages: answers often mix scripts and
+// an English word can never collide with a Devanagari one.
+const CONNECTORS: readonly (readonly string[])[] = FILES.flatMap((f) => f.connectors)
+  .map((c) => normaliseLabel(c).split(' '))
+  .sort((a, b) => b.length - a.length);
 
 for (const file of FILES) {
   for (const [key, variants] of Object.entries(file.labels)) {
@@ -49,4 +55,9 @@ export function synonymsFor(label: string): string[] {
 /** Every canonical key with its normalised variants, for tests and tooling. */
 export function allSynonyms(): ReadonlyMap<string, readonly string[]> {
   return LABELS_BY_KEY;
+}
+
+/** Connector phrases ("is", "मेरा", ...) as normalised word lists, longest first. */
+export function connectorPhrases(): readonly (readonly string[])[] {
+  return CONNECTORS;
 }

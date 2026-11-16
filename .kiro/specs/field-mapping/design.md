@@ -10,11 +10,11 @@ None. `src/form-model` and `src/mapping` are plain TypeScript with no DOM, no ne
 
 ```
 src/form-model/   types.ts, validate-model.ts, edit.ts, index.ts      (pure)
-src/mapping/      synonyms.en.json, synonyms.hi.json, normalise-label.ts,
+src/mapping/      synonyms.en.json, synonyms.hi.json, synonyms.ts, normalise-label.ts,
                   segment.ts, map-answers.ts, index.ts                   (pure)
 ```
 
-- `form-model` depends on nothing.
+- `form-model` depends on nothing at run time. `types.ts` imports the `IssueCode` type from `validation/issues.ts` (type only, erased at build).
 - `mapping` depends on `form-model` and on `validation` (to validate values). It never imports `ui`, `voice`, `ocr`, `pdf` or `capture`.
 - `llm-adapter` and `stitch-code` call `mapAnswers`; `mapping` does not know they exist.
 
@@ -110,7 +110,7 @@ All functions are pure and return new objects; nothing is mutated in place.
 ## Algorithm (`mapAnswers`)
 
 1. Sort answers by `seq`. Keep the last prompted answer per field (Req 3.4).
-2. For each answer without `promptedFieldId`, call `segment(text, lang)`: find every occurrence of a known label synonym (after `normaliseLabel`) and cut the text into `[label, value]` pairs. A segment matches the field whose normalised label or synonym set contains the segment's label. Exact match beats synonym match; two equal-best matches go to `unmatched` (Req 4.3).
+2. For each answer without `promptedFieldId`, call `segment(text, labelIndex)`, where `labelIndex = buildLabelIndex(form.fields)` holds each field's normalised label (exact) and its synonyms, so only this form's labels cut the text. `segment` finds every leftmost-longest occurrence of an indexed label on a word boundary and cuts the text into `[label, value]` pairs; connector words such as "is" or "है" (data in the synonym files) are stripped from the ends of each value. Connectors of both languages are used for every answer because answers often mix scripts, so the `lang` parameter of the first draft was dropped. A segment matches the field whose normalised label or synonym set contains the segment's label. Exact match beats synonym match; two equal-best matches, and text before the first label, go to `unmatched` (Req 4.3).
 3. A prompted answer always beats a free-text segment for the same field; the losing segment adds a `free-text-ignored` warning (Req 4.4).
 4. For each field with a candidate value, call `validateField(field, raw)` from `validation`. Pass gives `filled` with the normalised value; fail gives `flagged` with `raw` and the issues (Req 3.2, 3.3).
 5. Fields with no candidate: required gives `flagged` + `required-missing` (error); not required gives `empty` (Req 5.2, 5.3). `signature` fields use `signatures` instead of answers (Req 5.4). `photo` fields are always `empty` with a `photo-paste-after-print` info issue (Req 5.5).
