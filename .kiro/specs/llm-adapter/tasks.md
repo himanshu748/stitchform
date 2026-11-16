@@ -2,7 +2,7 @@
 
 Each task is one commit. No task deploys, serves or runs the Modal app.
 
-- [ ] 1. Add `src/llm/types.ts` and `adapter.ts` with provider `none` returning the rule-based result
+- [x] 1. Add `src/llm/types.ts` and `adapter.ts` with provider `none` returning the rule-based result
   - _Requirements: 1.1, 1.2_
 
 - [ ] 2. Implement `buildRequest` (labels and answers only) with a unit test on the serialised keys

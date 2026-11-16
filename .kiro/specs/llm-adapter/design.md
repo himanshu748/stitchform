@@ -33,14 +33,14 @@ Because Gemini browser access is not confirmed, the `gemini` provider is designe
 
 ```
 src/llm/
-  types.ts            ProviderId, ProviderConfig, LlmRequest, LlmSuggestion, LlmOutcome
+  types.ts            ProviderId, ProviderConfig, LlmRequest (LlmRequestField, LlmRequestAnswer), LlmSuggestion, LlmProvider, FallbackReason, LlmOutcome
   prompt.ts           buildRequest(form, answers, mapping) -> LlmRequest (pure; labels and answers only)
   parse.ts            parseSuggestions(text) -> LlmSuggestion[] (pure, never throws)
   merge.ts            mergeSuggestions(form, ruleResult, suggestions, ctx) -> MappingResult (pure)
   openai-compatible.ts  one HTTP client for modal and ollama (fetch)
   gemini.ts           hidden until confirmed
   key-store.ts        memory by default, optional localStorage with forget
-  adapter.ts          assist(config, form, answers, ruleResult, signal) -> LlmOutcome
+  adapter.ts          assist(config, form, answers, ruleResult, signal, ctx) -> Promise<LlmOutcome>; DEFAULT_PROVIDER_CONFIG
   index.ts
 modal/stitchform_llm.py
 ```
@@ -165,6 +165,17 @@ Open question, to resolve only after the owner says go and deploys: a browser se
 Cost note (Req 7.7): at $0.000222 per L4-second, the GPU alone costs about $0.80 per hour, so $30 of credit covers roughly 37 GPU-hours before CPU and memory charges, which are billed on top. Each cold start bills the boot time (weights download on the first boot, then the cached volume). A demo session of a few minutes plus the 120-second idle window costs cents, but this is an estimate from list prices, not a measurement. README states this, that Modal needs a payment method on file, and recommends setting a Workspace budget and spend limit in Usage & Billing.
 
 Deployment (Req 7.6): the owner runs `modal deploy modal/stitchform_llm.py` after saying go. The agent only runs `python3 -m py_compile modal/stitchform_llm.py`. commit-guard blocks `modal deploy`, `modal serve` and `modal run`.
+
+## Conventions settled during implementation
+
+Task 1 (`types.ts`, `adapter.ts`, `index.ts`):
+
+- `assist(config, form, answers, ruleResult, signal, ctx)` takes the `ValidationContext` as a sixth argument and returns a promise. `mergeSuggestions` checks suggestions with `validateField`, which needs an explicit `today` (validation Req 2.3), and `mapAnswers` already takes the same context (field-mapping conventions), so `assist` passes it on instead of reading the clock.
+- With provider `none`, `assist` resolves to `{ kind: "off", result: ruleResult }` with the very object it was given, and reads neither the answers nor the signal, so a signal that was already cancelled still keeps the rule-based result (Req 1.4). `DEFAULT_PROVIDER_CONFIG` is a frozen `{ id: "none" }` for the settings panel to start from (Req 1.1).
+- The two element types inside `LlmRequest` are named `LlmRequestField` and `LlmRequestAnswer`, and the fallback reasons `FallbackReason`, so other files can refer to them. The shapes are unchanged.
+- Until the provider clients exist (task 6), `assist` throws an `Error` for any other provider, and the message names only the provider ID, never an endpoint or a key. The settings panel cannot offer another provider yet; task 6 replaces this branch.
+- `index.ts` re-exports `assist`, `DEFAULT_PROVIDER_CONFIG` and the types `ProviderId`, `ProviderConfig`, `LlmOutcome` and `FallbackReason`. A unit test checks the list of exported values.
+- `src/llm/adapter.test.ts` covers the check "with provider `none` the full mapping and validation pipeline works without any network call". `fetch`, `XMLHttpRequest`, `WebSocket` and `EventSource` are replaced by stubs that record the call and throw (one test shows that the stubs do catch a call). A demo form goes through `mapAnswers` and `assist`, and a fast-check property repeats this for generated forms, answers, signature sets and days, with and without a cancelled signal, expecting the rule-based result back unchanged and no call.
 
 ## Correctness properties
 
