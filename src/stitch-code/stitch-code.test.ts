@@ -103,7 +103,21 @@ describe('public API with the production iteration count (Req 2.1, 5.1)', () => 
   });
 
   it('exposes only the production entry points', () => {
-    expect(Object.keys(publicApi).sort()).toEqual(['DEFAULT_ITERATIONS', 'createStitchCode', 'openStitchCode', 'refillForm']);
+    expect(Object.keys(publicApi).sort()).toEqual([
+      'COMMON_PASSWORDS_PATH',
+      'DEFAULT_ITERATIONS',
+      'MIN_PASSPHRASE_LENGTH',
+      'WORD_LIST_PATH',
+      'checkCustomPassphrase',
+      'createStitchCode',
+      'generatePassphrase',
+      'openStitchCode',
+      'parseCommonPasswords',
+      'parseWordList',
+      'passphraseLength',
+      'passphraseMessage',
+      'refillForm',
+    ]);
   });
 });
 

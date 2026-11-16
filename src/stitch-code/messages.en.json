@@ -1,0 +1,4 @@
+{
+  "passphrase-too-short": "This passphrase is too short. Please use at least 16 characters, or use the words Stitchform picked for you.",
+  "passphrase-common": "This passphrase is on a list of common passwords that attackers try first. Please choose a different one, or use the words Stitchform picked for you."
+}

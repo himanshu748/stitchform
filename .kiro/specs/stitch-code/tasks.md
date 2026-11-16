@@ -21,7 +21,7 @@ Each task is one commit. New npm dependencies go into README "Pre-existing work"
 - [x] 6. Add the EFF large wordlist and the SecLists common-password list under `public/wordlists/`, with README attribution
   - _Requirements: 1.1, 1.4_
 
-- [ ] 7. Implement `generatePassphrase` (rejection sampling) and `checkCustomPassphrase` with unit tests
+- [x] 7. Implement `generatePassphrase` (rejection sampling) and `checkCustomPassphrase` with unit tests
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
 
 - [ ] 8. Install `qrcode` and `jsqr` (exact versions), add README entries, implement `qr.ts` encode with the too-large path

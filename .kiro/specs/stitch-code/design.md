@@ -29,6 +29,7 @@ Bundled data:
 src/stitch-code/
   format.ts        header layout, encodeHeader, decodeHeader (pure)
   passphrase.ts    generatePassphrase(words, rng), checkCustomPassphrase(p, commonSet) (pure)
+  messages.en.json, messages.hi.json   passphrase messages keyed by code
   crypto.ts        deriveKey, seal, open (Web Crypto, runs in browser and Node 22)
   compress.ts      deflateRaw, inflateRaw with a 64 KiB output cap
   payload.ts       payloadFromResult(result), toPayload(formId, answers), fromPayload(bytes), toAnswers(payload)
@@ -108,6 +109,16 @@ Task 6 (bundled word lists):
 
 - Both files are byte-for-byte copies of their sources, and `src/stitch-code/wordlists.test.ts` checks their SHA-256 (also listed in README "Pre-existing work"). The EFF file keeps its original lines, `<five dice digits><tab><word>`, so `passphrase.ts` parses that format (task 7) rather than the repo shipping an edited copy. The SecLists list is pinned to commit `913b327` (2026-09-08), renamed to `common-passwords.txt`, and its MIT licence text ships next to it as `public/wordlists/SecLists-LICENSE.txt`, because the MIT licence asks for the notice to travel with copies.
 - The SecLists list has 10,001 entries (all lower case, no duplicates), and only one of them, `films+pic+galeries`, has 16 or more characters. Because Req 1.3 already rejects anything shorter, Req 1.4 with this list rejects only that one entry in practice. The check is kept as specified; a longer list could replace the file later without code changes.
+
+Task 7 (`passphrase.ts`):
+
+- Besides `generatePassphrase` and `checkCustomPassphrase`, `passphrase.ts` exports `parseWordList(text)` and `parseCommonPasswords(text)`, so the passphrase dialog only has to fetch the two files as text from `WORD_LIST_PATH` and `COMMON_PASSWORDS_PATH` (relative to the app's base URL). Both throw on text of the wrong shape, such as an HTML error page, and `parseWordList` also throws unless it finds 7,776 distinct words. `passphraseLength(p)` is exported for the dialog's character counter and `passphraseMessage(code, lang)` for the refusal text. `index.ts` re-exports these; `pickWordIndex`, `ACCEPT_BELOW`, `MAX_DRAWS_PER_WORD` and `commonPasswordKey` stay internal.
+- The injected RNG is `RandomFill = (array: Uint16Array) => void`, and the default calls `crypto.getRandomValues`. `pickWordIndex` applies the rejection sampling above and zeroes its draw buffer afterwards. It throws an `Error` after 64 rejected draws in a row (about 1 in 10^83 with a working source) instead of looping for ever on a broken source.
+- `generatePassphrase` throws a `RangeError` unless it gets exactly 7,776 distinct words without whitespace, so the 64.6-bit figure always holds, and joins the five words with single spaces. The shortest EFF word has 3 letters, so a generated passphrase has at least 19 characters and always meets Req 1.3.
+- "Characters" in Req 1.3 means Unicode code points after `normalisePassphrase` (NFC, then trim), the same normalisation as key derivation. Code points give the same count in every browser; grapheme segmentation depends on the engine's Unicode version, so a passphrase could pass in one browser and fail in another.
+- Req 1.4 compares `normalisePassphrase(p).toLowerCase()` with list entries that went through the same function when the list was parsed. The length rule is checked first, so a short common password such as `password` gets the "too short" message.
+- Refusal messages live in `src/stitch-code/messages.en.json` and `messages.hi.json`, keyed by the `PassphraseProblem` code (`passphrase-too-short`, `passphrase-common`), as in `src/validation`. The other stitch-code messages (Req 5.2, 5.4, 6.1, 6.2) arrive with the stitch-code panel (task 10).
+- The unit test checks the index mapping for all 65,536 possible 16-bit draws: each of the 7,776 indices is reached by exactly 8 accepted values and the 3,328 others are redrawn.
 
 ## Correctness properties
 
