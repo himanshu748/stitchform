@@ -27,7 +27,7 @@ Each task is one commit. Run `npm run typecheck` and `npm test` before committin
   - Prompted answers, latest wins, prompted beats free text, required, signature and photo rules
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 4.4, 5.2, 5.3, 5.4, 5.5, 6.3, 7.1, 7.2_
 
-- [ ] 7. Property test P1: required fields are filled or flagged
+- [x] 7. Property test P1: required fields are filled or flagged
   - `src/mapping/map-answers.property.test.ts`
   - _Requirements: 5.1, 5.2, 5.4; Property: P1_
 

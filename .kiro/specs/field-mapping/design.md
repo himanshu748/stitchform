@@ -128,6 +128,7 @@ Conventions settled during implementation (task 6):
 - Text aimed at `signature` or `photo` fields (prompted or free text) is never used and adds no warning: signatures come only from `signatures`, photos are always `empty` with the info issue.
 - `raw` and `provenance` are kept only when the field is `filled` (provenance only) or `flagged` with a non-blank answer, so a field with no usable answer looks the same however it got there.
 - A prompted answer for a field ID the form does not have (for example from an older version of the form) goes to `unmatched` after normalisation, so nothing the user said is dropped silently.
+- P1 treats `photo` fields as the one exception to "filled or flagged": Req 5.5 leaves them `empty` with the `photo-paste-after-print` info issue even when required, and P1 checks exactly that.
 
 ## Synonym data
 

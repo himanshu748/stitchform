@@ -3,7 +3,9 @@
 // sample-form vocabulary or random strings, never from real people or real forms.
 
 import fc from 'fast-check';
-import type { BBox, FieldType, FormField, FormModel, PageInfo } from '../form-model';
+import type { Answer, AnswerSource, BBox, FieldType, FormField, FormModel, PageInfo } from '../form-model';
+import { rawAnswerArb, rawForFieldArb } from '../validation/arbitraries';
+import { synonymsFor } from './synonyms';
 
 export const FIELD_TYPES = [
   'text',
@@ -118,4 +120,68 @@ export function formModelArb(): fc.Arbitrary<FormModel> {
       fields: fc.uniqueArray(fieldArb(pageCount), { minLength: 1, maxLength: 20, selector: (f) => f.id }),
     }),
   );
+}
+
+/** Longer than any generated field ID (at most 12 characters), so it is never on the form. */
+export const ID_NOT_ON_FORM = 'demo-not-on-form';
+
+const SOURCES: readonly AnswerSource[] = ['typed', 'voice', 'stitch-code', 'llm'];
+const CONNECTORS = ['', ' is', ':', ' -', ' है'];
+const SEPARATORS = [', ', ' and ', '. ', ' और ', ' '];
+
+/** "<label><connector> <value>" aimed at one field, using its printed label or a synonym. */
+function labelledPartArb(fields: readonly FormField[]): fc.Arbitrary<string> {
+  const aimed = fc.constantFrom(...fields).chain((f) =>
+    fc.tuple(fc.constantFrom(f.label, ...synonymsFor(f.label)), fc.constantFrom(...CONNECTORS), rawForFieldArb(f)),
+  );
+  const loose = fc.tuple(fc.constantFrom(...DEMO_LABELS), fc.constantFrom(...CONNECTORS), rawAnswerArb());
+  return fc.oneof({ weight: 3, arbitrary: aimed }, { weight: 1, arbitrary: loose }).map(([l, c, v]) => `${l}${c} ${v}`);
+}
+
+/** Free text: one to three labelled parts joined by a separator, or any string at all. */
+function freeTextArb(fields: readonly FormField[]): fc.Arbitrary<string> {
+  const sentence = fc
+    .tuple(fc.array(labelledPartArb(fields), { minLength: 1, maxLength: 3 }), fc.constantFrom(...SEPARATORS))
+    .map(([parts, sep]) => parts.join(sep));
+  return fc.oneof({ weight: 3, arbitrary: sentence }, { weight: 1, arbitrary: fc.string({ maxLength: 60 }) });
+}
+
+/**
+ * One answer for `form`: a prompted answer aimed at one of its fields (valid, invalid, blank or
+ * any text), a prompted answer for a field the form does not have, or free text naming fields
+ * by label or synonym. `seq` values repeat on purpose, so ties are covered.
+ */
+export function answerArb(form: FormModel): fc.Arbitrary<Answer> {
+  const promptedOnForm = fc
+    .constantFrom(...form.fields)
+    .chain((f) => rawForFieldArb(f).map((text) => ({ promptedFieldId: f.id, text })));
+  const promptedOffForm = rawAnswerArb().map((text) => ({ promptedFieldId: ID_NOT_ON_FORM, text }));
+  const body = fc.oneof(
+    { weight: 4, arbitrary: promptedOnForm },
+    { weight: 1, arbitrary: promptedOffForm },
+    { weight: 3, arbitrary: freeTextArb(form.fields).map((text) => ({ text })) },
+  );
+  return fc
+    .record({
+      body,
+      source: fc.constantFrom(...SOURCES),
+      lang: fc.constantFrom('en' as const, 'hi' as const),
+      seq: fc.integer({ min: 0, max: 30 }),
+    })
+    .map(({ body: b, ...rest }): Answer => ({ ...rest, ...b }));
+}
+
+/** Zero to twelve answers for `form`. */
+export function answersArb(form: FormModel): fc.Arbitrary<Answer[]> {
+  return fc.array(answerArb(form), { maxLength: 12 });
+}
+
+/** Which fields have a drawn or uploaded signature: any subset of the form's field IDs. */
+export function signaturesArb(form: FormModel): fc.Arbitrary<ReadonlySet<string>> {
+  return fc.subarray(form.fields.map((f) => f.id)).map((ids) => new Set(ids));
+}
+
+/** A form with answers and a signature set for it, the input of mapAnswers. */
+export function mappingInputArb(): fc.Arbitrary<[FormModel, Answer[], ReadonlySet<string>]> {
+  return formModelArb().chain((form) => fc.tuple(fc.constant(form), answersArb(form), signaturesArb(form)));
 }
