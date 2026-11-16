@@ -2,7 +2,7 @@
 
 Each task is one commit. Run `npm run typecheck` and `npm test` before committing.
 
-- [ ] 1. Add the shared types in `src/form-model/types.ts` and `index.ts` exports
+- [x] 1. Add the shared types in `src/form-model/types.ts` and `index.ts` exports
   - `FieldType`, `BBox`, `FormField`, `PageInfo`, `FormModel`, `Answer`, `Issue`, `FieldResult`, `MappingResult` exactly as in design.md
   - _Requirements: 1.1, 1.2, 1.4_
 
