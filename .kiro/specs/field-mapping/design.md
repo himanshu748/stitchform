@@ -100,6 +100,7 @@ export function mapAnswers(
   form: FormModel,
   answers: readonly Answer[],
   signatures: ReadonlySet<string>,
+  ctx: ValidationContext, // from validation: explicit "today" and language, so results are reproducible
 ): MappingResult;
 export function toPromptedAnswers(result: MappingResult): Answer[]; // used by P4 and stitch-code
 export function normaliseLabel(s: string): string;                  // Req 4.2
@@ -117,6 +118,16 @@ All functions are pure and return new objects; nothing is mutated in place.
 6. Every field ID of the form appears in `fields`, in form order.
 
 `toPromptedAnswers` emits one prompted answer per `filled` field (value as text) and per `flagged` field that has `raw`, with increasing `seq`. Because normalised values are fixed points of their validators (validation spec, Req 1.4 and 3.x), mapping them again gives the same result (P4).
+
+Conventions settled during implementation (task 6):
+
+- `mapAnswers` takes the validation `ValidationContext` as a fourth argument. `validateField` needs an explicit `today` (validation Req 2.3), and passing it in keeps the mapper free of the clock (Req 6.1).
+- Answers are taken in `seq` order; answers with the same `seq` keep their input order, so the one listed last wins.
+- The latest prompted answer counts even when it is blank, so the user can clear a field. It still beats free text for that field.
+- When free text names one field more than once, the latest segment is used. A losing free-text segment adds at most one `free-text-ignored` warning per field, after the validator's issues.
+- Text aimed at `signature` or `photo` fields (prompted or free text) is never used and adds no warning: signatures come only from `signatures`, photos are always `empty` with the info issue.
+- `raw` and `provenance` are kept only when the field is `filled` (provenance only) or `flagged` with a non-blank answer, so a field with no usable answer looks the same however it got there.
+- A prompted answer for a field ID the form does not have (for example from an older version of the form) goes to `unmatched` after normalisation, so nothing the user said is dropped silently.
 
 ## Synonym data
 

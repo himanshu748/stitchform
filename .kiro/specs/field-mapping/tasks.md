@@ -23,7 +23,7 @@ Each task is one commit. Run `npm run typecheck` and `npm test` before committin
   - Ambiguous segments go to `unmatched`
   - _Requirements: 4.1, 4.3_
 
-- [ ] 6. Implement `mapAnswers` (depends on validation task 7, `validateField`)
+- [x] 6. Implement `mapAnswers` (depends on validation task 7, `validateField`)
   - Prompted answers, latest wins, prompted beats free text, required, signature and photo rules
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 4.4, 5.2, 5.3, 5.4, 5.5, 6.3, 7.1, 7.2_
 
