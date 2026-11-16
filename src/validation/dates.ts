@@ -3,6 +3,8 @@
 // implementation-defined. Nothing here reads the clock: "today" is always passed in (Req 2.3).
 
 import { toAsciiDigits, toDevanagariDigits } from './digits';
+import { HINDI_HUNDRED, HINDI_THOUSAND, foldDevanagari, parseHindiNumber } from './hindi-numbers';
+import { monthFromName } from './months';
 
 export interface CalendarDate {
   y: number;
@@ -129,7 +131,85 @@ const ISO = /^(\d{4})\s*-\s*(\d{1,2})\s*-\s*(\d{1,2})$/u;
 // Day first, one separator used twice (the back-reference rejects mixes such as 05/03-2004).
 const DAY_FIRST = /^(\d{1,2})\s*([/.-])\s*(\d{1,2})\s*\2\s*(\d{4}|\d{2})$/u;
 
-function numericDate(s: string, opts: ParseDateOptions): { date: CalendarDate; twoDigitYear: boolean } | null {
+interface FoundDate {
+  date: CalendarDate;
+  twoDigitYear: boolean;
+}
+
+// Words that may sit inside a spoken date without changing it: "5th of March", "सन 2004".
+const FILLER_WORDS = new Set(['of', 'the', 'सन', 'सन्'].map(foldDevanagari));
+const HUNDRED = foldDevanagari(HINDI_HUNDRED);
+const THOUSAND = foldDevanagari(HINDI_THOUSAND);
+
+function wordTokens(s: string): string[] {
+  return s
+    .toLowerCase()
+    .replace(/[,\u0964]/gu, ' ')
+    .split(' ')
+    .map((t) => t.replace(/\.$/u, ''))
+    .filter((t) => t !== '' && !FILLER_WORDS.has(foldDevanagari(t)));
+}
+
+/** A day: 1 or 2 digits with an optional English ordinal suffix, or a Hindi number word. */
+function dayFromToken(t: string): number | null {
+  const digits = /^(\d{1,2})(st|nd|rd|th)?$/u.exec(t);
+  if (digits) return Number(digits[1]);
+  return parseHindiNumber(t);
+}
+
+/** Up to 99, as 1 or 2 digits or a Hindi number word. */
+function smallNumber(t: string): number | null {
+  return /^\d{1,2}$/u.test(t) ? Number(t) : parseHindiNumber(t);
+}
+
+/**
+ * A year: four digits, two digits (pivot rule), "<n> सौ [x]" = n * 100 + x (as in
+ * "उन्नीस सौ चार" = 1904) or "<n> हज़ार [x]" = n * 1000 + x (as in "दो हज़ार चार" = 2004).
+ */
+function yearFromTokens(
+  ts: readonly string[],
+  opts: ParseDateOptions,
+  m: number,
+  d: number,
+): { y: number; twoDigitYear: boolean } | null {
+  const [first, unit, rest, extra] = ts;
+  if (first === undefined || extra !== undefined) return null;
+  if (unit === undefined) {
+    if (/^\d{4}$/u.test(first)) return { y: Number(first), twoDigitYear: false };
+    if (/^\d{2}$/u.test(first)) {
+      return { y: resolveTwoDigitYear(Number(first), { ...opts, m, d }), twoDigitYear: true };
+    }
+    return null;
+  }
+  const n = parseHindiNumber(first);
+  const x = rest === undefined ? 0 : smallNumber(rest);
+  if (n === null || x === null) return null;
+  const unitKey = foldDevanagari(unit);
+  if (unitKey === HUNDRED && n >= 1 && (rest === undefined || x >= 1)) return { y: n * 100 + x, twoDigitYear: false };
+  if (unitKey === THOUSAND && n >= 1 && n <= 9) return { y: n * 1000 + x, twoDigitYear: false };
+  return null;
+}
+
+/**
+ * Spoken or written dates (Req 1.3): "<day> <month> <year>" or "<month> <day>, <year>", where
+ * the month is an English or Hindi name or a three-letter English short form, and the day and
+ * year are digits or Hindi number words.
+ */
+function wordDate(s: string, opts: ParseDateOptions): FoundDate | null {
+  const ts = wordTokens(s);
+  const monthAt = ts.flatMap((t, i) => (monthFromName(t) === null ? [] : [i]));
+  if (monthAt.length !== 1) return null;
+  const mi = monthAt[0] ?? -1;
+  const m = monthFromName(ts[mi] ?? '');
+  if (m === null || (mi !== 0 && mi !== 1)) return null;
+  const dayToken = mi === 1 ? ts[0] : ts[1];
+  const d = dayToken === undefined ? null : dayFromToken(dayToken);
+  if (d === null) return null;
+  const year = yearFromTokens(ts.slice(2), opts, m, d);
+  return year === null ? null : { date: { y: year.y, m, d }, twoDigitYear: year.twoDigitYear };
+}
+
+function numericDate(s: string, opts: ParseDateOptions): FoundDate | null {
   const iso = ISO.exec(s);
   if (iso) return { date: { y: Number(iso[1]), m: Number(iso[2]), d: Number(iso[3]) }, twoDigitYear: false };
   const dm = DAY_FIRST.exec(s);
@@ -146,15 +226,17 @@ function numericDate(s: string, opts: ParseDateOptions): { date: CalendarDate; t
 
 /**
  * Parse a date written as DD/MM/YYYY, D/M/YYYY, DD-MM-YYYY, DD.MM.YYYY, D-M-YY or YYYY-MM-DD,
- * with ASCII or Devanagari digits (Req 1.1, 1.2). A text that is not a date gives
- * `date-unparsed`; numbers that are not a real calendar date give `date-impossible` (Req 1.5,
- * 1.7). The date is never moved to a different day. `role` and `today` only affect two-digit
- * years (Req 1.6); date of birth plausibility is checked by the caller with checkDateOfBirth.
+ * with ASCII or Devanagari digits (Req 1.1, 1.2), or spoken as "5 March 2004",
+ * "March 5, 2004", "5 मार्च 2004" or "पाँच मार्च दो हज़ार चार" (Req 1.3). A text that is not a
+ * date gives `date-unparsed`; numbers that are not a real calendar date give `date-impossible`
+ * (Req 1.5, 1.7). The date is never moved to a different day. `role` and `today` only affect
+ * two-digit years (Req 1.6); date of birth plausibility is checked by the caller with
+ * checkDateOfBirth.
  */
 export function parseDate(text: string, opts: ParseDateOptions): ParseDateResult {
   if (text.length > MAX_DATE_INPUT) return { ok: false, code: 'date-unparsed' };
   const s = toAsciiDigits(text.normalize('NFC')).replace(/\s+/gu, ' ').trim();
-  const found = numericDate(s, opts);
+  const found = numericDate(s, opts) ?? wordDate(s, opts);
   if (found === null) return { ok: false, code: 'date-unparsed' };
   if (!isValidCalendarDate(found.date)) return { ok: false, code: 'date-impossible' };
   return { ok: true, date: found.date, twoDigitYear: found.twoDigitYear };

@@ -19,7 +19,7 @@ Each task is one commit. Run `npm run typecheck` and `npm test` before committin
 - [x] 5. Add two-digit-year pivot and DOB plausibility with an explicit `today`
   - _Requirements: 1.6, 2.1, 2.2, 2.3_
 
-- [ ] 6. Add English and Hindi month names, Hindi number words 0 to 99 and word-date parsing with unit tests
+- [x] 6. Add English and Hindi month names, Hindi number words 0 to 99 and word-date parsing with unit tests
   - Examples: "5 March 2004", "March 5, 2004", "5 मार्च 2004", "पाँच मार्च दो हज़ार चार"
   - _Requirements: 1.3_
 
