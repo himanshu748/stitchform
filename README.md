@@ -83,7 +83,18 @@ From the initial commit created by [T3 Code](https://t3.codes):
 - The placeholder `README.md` text ("Created in T3 Code"), now replaced.
 - `assets/icon.svg`, still used as the project icon above.
 
-Third-party npm packages (development only; none are bundled into the app yet):
+Third-party npm packages, pinned to exact versions in `package.json`.
+
+Runtime packages (`dependencies`). They go into the app bundle once the UI imports them, which happens in the lab-ui milestone; today's placeholder page does not import them yet:
+
+| Package | Version | Licence | Used for |
+|---|---|---|---|
+| `qrcode` | 1.5.4 | MIT | stitch-code QR encoding (`src/stitch-code/qr.ts`) |
+| `jsqr` | 1.4.0 | Apache-2.0 | stitch-code QR decoding; scanning arrives with the UI, and the tests already use it to scan generated codes |
+
+In a browser build, `qrcode` resolves to its `lib/browser.js` entry (the `browser` field of its `package.json`), which needs only `dijkstrajs` 1.0.3 (MIT) from its own dependencies. Its other dependencies, `pngjs` and `yargs`, serve its Node and command-line entries and are not bundled (checked with a trial Vite build of `qr.ts`).
+
+Development packages (`devDependencies`, not shipped):
 
 | Package | Version | Licence | Used for |
 |---|---|---|---|
@@ -93,8 +104,9 @@ Third-party npm packages (development only; none are bundled into the app yet):
 | `fast-check` | 4.10.2 | MIT | property-based tests |
 | `@playwright/test` | 1.65.1 | Apache-2.0 | end-to-end smoke test |
 | `@types/node` | 22.20.5 | MIT | Node.js types for config files and scripts |
+| `@types/qrcode` | 1.5.6 | MIT | TypeScript types for `qrcode`, from [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped) |
 
-Their own dependencies are pinned in `package-lock.json`.
+Their own dependencies are pinned in `package-lock.json`. The licences of `qrcode`, `jsqr`, `dijkstrajs` and `@types/qrcode` come from npm metadata and the licence files inside the packages, checked 2026-11-16.
 
 Data files in `public/wordlists/`, copied unchanged from their sources (a unit test, `src/stitch-code/wordlists.test.ts`, checks the SHA-256 values below):
 
@@ -114,8 +126,6 @@ Chosen in the specs for later milestones (not installed or downloaded yet; each 
 | `pdf-lib` | 1.17.1 | MIT | PDF generation | pdf-regeneration |
 | `@pdf-lib/fontkit` | 1.1.1 | MIT | custom font embedding | pdf-regeneration |
 | Noto Sans Devanagari ([notofonts/devanagari](https://github.com/notofonts/devanagari)) | 2.007 | SIL OFL 1.1 | Hindi text | pdf-regeneration |
-| `qrcode` | 1.5.4 | MIT | stitch-code QR encoding | stitch-code |
-| `jsqr` | 1.4.0 | Apache-2.0 | stitch-code QR decoding | stitch-code |
 | [Qwen/Qwen3-4B-Instruct-2507](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507) | revision `cdbee75` | Apache-2.0 | optional LLM in the Modal app (not shipped in the web app) | llm-adapter |
 | vLLM ([vllm-project/vllm](https://github.com/vllm-project/vllm)) and the [Modal vLLM example](https://modal.com/docs/examples/vllm_inference) ([modal-labs/modal-examples](https://github.com/modal-labs/modal-examples)) | vLLM 0.21.0 | Apache-2.0 (vLLM), MIT (modal-examples) | optional Modal app, adapted from Modal's example | llm-adapter |
 

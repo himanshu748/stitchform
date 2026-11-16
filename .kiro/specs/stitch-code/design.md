@@ -33,7 +33,7 @@ src/stitch-code/
   crypto.ts        deriveKey, seal, open (Web Crypto, runs in browser and Node 22)
   compress.ts      deflateRaw, inflateRaw with a 64 KiB output cap
   payload.ts       payloadFromResult(result), toPayload(formId, answers), fromPayload(bytes), toAnswers(payload)
-  qr.ts            toQrDataUrl(bytes) -> string | "too-large"; decodeQr(imageData) (browser only)
+  qr.ts            toQrDataUrl(bytes) -> Promise<{ ok: true, dataUrl } | { ok: false, code: "too-large" }>; decodeQr(imageData) (browser only, task 9)
   stitch-code.ts   createStitchCode, openStitchCode, refillForm (+ test-only sealWithIterations, openWithBounds)
   index.ts         public API: re-exports createStitchCode, openStitchCode, refillForm
 public/wordlists/eff_large_wordlist.txt, public/wordlists/common-passwords.txt, public/wordlists/SecLists-LICENSE.txt
@@ -119,6 +119,16 @@ Task 7 (`passphrase.ts`):
 - Req 1.4 compares `normalisePassphrase(p).toLowerCase()` with list entries that went through the same function when the list was parsed. The length rule is checked first, so a short common password such as `password` gets the "too short" message.
 - Refusal messages live in `src/stitch-code/messages.en.json` and `messages.hi.json`, keyed by the `PassphraseProblem` code (`passphrase-too-short`, `passphrase-common`), as in `src/validation`. The other stitch-code messages (Req 5.2, 5.4, 6.1, 6.2) arrive with the stitch-code panel (task 10).
 - The unit test checks the index mapping for all 65,536 possible 16-bit draws: each of the 7,776 indices is reached by exactly 8 accepted values and the 3,328 others are redrawn.
+
+Task 8 (`qr.ts`; `qrcode` 1.5.4 and `jsqr` 1.4.0 installed, with `@types/qrcode` 1.5.6 for types):
+
+- `toQrDataUrl(bytes)` resolves to `{ ok: true, dataUrl }` or `{ ok: false, code: "too-large" }`, a result shaped like `CreateResult`, instead of the `string | "too-large"` first written in the module layout. In TypeScript that union is the same type as `string`, so the compiler could not make callers handle the too-large case. It returns a promise because `toDataURL` without a callback does.
+- A byte length over `QR_MAX_BYTES` (2,331) gives `too-large` before the encoder runs. Any error from the encoder, thrown or rejected, also gives `too-large`, because the `.stitch` file offered then always works. A unit test checks that 2,331 bytes fit in one version 40 symbol and that the encoder itself refuses 2,332, so the constant matches the library.
+- The bytes are passed as `Uint8ClampedArray.from(bytes)`, as the node-qrcode README's "Binary data" section shows. That section's advice to put `// @ts-ignore` above the segment when using `@types/qrcode` is out of date: `@types/qrcode` 1.5.6 types a byte segment's `data` as `Buffer | Uint8ClampedArray | Uint8Array`, so no suppression is needed.
+- Only `errorCorrectionLevel: "M"` is set; everything else stays at the encoder defaults (a quiet zone of 4 modules, 4 pixels per module, PNG). The encoder writes its renderer defaults into the options object it receives, so `toQrDataUrl` builds a new options object on every call.
+- Node resolves `qrcode` to its server entry, which draws the PNG with `pngjs`. A browser build resolves to `lib/browser.js` (the package's `browser` field), which draws on a new canvas and bundles neither `pngjs` nor `yargs`; a trial Vite build of `qr.ts` came to 33 KB minified, about 10 KB gzipped. Because the repository has no PNG decoder, the unit tests check the PNG signature of the data URL, and check the bytes by scanning with jsQR a symbol drawn from the module matrix that `QRCode.create` builds from exactly the segments and options `toQrDataUrl` passed. Codes of 1, 52, 1,000 and 2,331 bytes scan back to exactly the same bytes, and a demo stitch code scans back and opens with its passphrase. Scanning a real PNG from a camera or an image is task 9.
+- jsQR's README describes `binaryData` as a `Uint8ClampedArray`, while its bundled type definitions declare `number[]`. The tests copy it into a `Uint8Array` with `Uint8Array.from`, which works for both, and task 9 should do the same.
+- `index.ts` re-exports `toQrDataUrl` and the `QrImageResult` type; `QR_MAX_BYTES` stays internal. `decodeQr` is not written yet (task 9).
 
 ## Correctness properties
 

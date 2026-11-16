@@ -117,6 +117,7 @@ describe('public API with the production iteration count (Req 2.1, 5.1)', () => 
       'passphraseLength',
       'passphraseMessage',
       'refillForm',
+      'toQrDataUrl',
     ]);
   });
 });

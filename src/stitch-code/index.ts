@@ -5,6 +5,8 @@ export type { Bytes } from './format';
 export { DEFAULT_ITERATIONS } from './format';
 export type { CreateResult, OpenFailure, OpenResult, OpenedStitchCode, RefillOutcome } from './stitch-code';
 export { createStitchCode, openStitchCode, refillForm } from './stitch-code';
+export type { QrImageResult } from './qr';
+export { toQrDataUrl } from './qr';
 export type { PassphraseCheck, PassphraseProblem, RandomFill } from './passphrase';
 export {
   COMMON_PASSWORDS_PATH,
