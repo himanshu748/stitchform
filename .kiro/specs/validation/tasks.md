@@ -26,7 +26,7 @@ Each task is one commit. Run `npm run typecheck` and `npm test` before committin
 - [x] 7. Implement `validateField` for text, number, choice, checkbox, signature and required checks
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3_
 
-- [ ] 8. Property tests for validator idempotence and totality
+- [x] 8. Property tests for validator idempotence and totality
   - _Requirements: 3.5, 5.3; supports Property: P1, P4, P5_
 
 - [ ] 9. Re-validate on edit (wired in lab-ui; covered by the e2e smoke test)
