@@ -90,24 +90,56 @@ export interface ParseDateOptions {
   today: CalendarDate;
 }
 
-/** Year for a two-digit year. Until the pivot rule lands, every two-digit year is 2000 + YY. */
-function resolveYear(yy: number): number {
-  return 2000 + yy;
+/**
+ * Four-digit year for a two-digit year (Req 1.6). For a date of birth: the latest year ending in
+ * those digits for which the whole date is not after `today` (so a two-digit DOB is never put
+ * in the future). For any other date: 2000 + YY. The caller adds a `date-two-digit-year`
+ * warning either way so the user confirms.
+ */
+export function resolveTwoDigitYear(
+  yy: number,
+  opts: ParseDateOptions & { m: number; d: number },
+): number {
+  if (opts.role !== 'dob') return 2000 + yy;
+  const { today } = opts;
+  let y = today.y - ((((today.y - yy) % 100) + 100) % 100);
+  if (y === today.y && compareDates({ y, m: opts.m, d: opts.d }, today) > 0) y -= 100;
+  return y;
+}
+
+/** Oldest age, in whole years, that a date of birth may give without a warning (Req 2.2). */
+export const MAX_PLAUSIBLE_AGE = 120;
+
+/** Age in whole years on `today` of someone born on `dob`. */
+export function ageOn(dob: CalendarDate, today: CalendarDate): number {
+  const hadBirthday = today.m > dob.m || (today.m === dob.m && today.d >= dob.d);
+  return today.y - dob.y - (hadBirthday ? 0 : 1);
+}
+
+/**
+ * Date of birth plausibility (Req 2.1, 2.2): `dob-in-future` when the date is after `today`,
+ * `dob-implausible` when the age is above 120 years. `today` is an explicit input (Req 2.3).
+ */
+export function checkDateOfBirth(dob: CalendarDate, today: CalendarDate): ('dob-in-future' | 'dob-implausible')[] {
+  if (compareDates(dob, today) > 0) return ['dob-in-future'];
+  return ageOn(dob, today) > MAX_PLAUSIBLE_AGE ? ['dob-implausible'] : [];
 }
 
 const ISO = /^(\d{4})\s*-\s*(\d{1,2})\s*-\s*(\d{1,2})$/u;
 // Day first, one separator used twice (the back-reference rejects mixes such as 05/03-2004).
 const DAY_FIRST = /^(\d{1,2})\s*([/.-])\s*(\d{1,2})\s*\2\s*(\d{4}|\d{2})$/u;
 
-function numericDate(s: string): { date: CalendarDate; twoDigitYear: boolean } | null {
+function numericDate(s: string, opts: ParseDateOptions): { date: CalendarDate; twoDigitYear: boolean } | null {
   const iso = ISO.exec(s);
   if (iso) return { date: { y: Number(iso[1]), m: Number(iso[2]), d: Number(iso[3]) }, twoDigitYear: false };
   const dm = DAY_FIRST.exec(s);
   if (dm) {
     const yearText = dm[4] ?? '';
+    const d = Number(dm[1]);
+    const m = Number(dm[3]);
     const twoDigitYear = yearText.length === 2;
-    const y = twoDigitYear ? resolveYear(Number(yearText)) : Number(yearText);
-    return { date: { y, m: Number(dm[3]), d: Number(dm[1]) }, twoDigitYear };
+    const y = twoDigitYear ? resolveTwoDigitYear(Number(yearText), { ...opts, m, d }) : Number(yearText);
+    return { date: { y, m, d }, twoDigitYear };
   }
   return null;
 }
@@ -116,12 +148,13 @@ function numericDate(s: string): { date: CalendarDate; twoDigitYear: boolean } |
  * Parse a date written as DD/MM/YYYY, D/M/YYYY, DD-MM-YYYY, DD.MM.YYYY, D-M-YY or YYYY-MM-DD,
  * with ASCII or Devanagari digits (Req 1.1, 1.2). A text that is not a date gives
  * `date-unparsed`; numbers that are not a real calendar date give `date-impossible` (Req 1.5,
- * 1.7). The date is never moved to a different day.
+ * 1.7). The date is never moved to a different day. `role` and `today` only affect two-digit
+ * years (Req 1.6); date of birth plausibility is checked by the caller with checkDateOfBirth.
  */
-export function parseDate(text: string, _opts: ParseDateOptions): ParseDateResult {
+export function parseDate(text: string, opts: ParseDateOptions): ParseDateResult {
   if (text.length > MAX_DATE_INPUT) return { ok: false, code: 'date-unparsed' };
   const s = toAsciiDigits(text.normalize('NFC')).replace(/\s+/gu, ' ').trim();
-  const found = numericDate(s);
+  const found = numericDate(s, opts);
   if (found === null) return { ok: false, code: 'date-unparsed' };
   if (!isValidCalendarDate(found.date)) return { ok: false, code: 'date-impossible' };
   return { ok: true, date: found.date, twoDigitYear: found.twoDigitYear };

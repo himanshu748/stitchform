@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DATE_FORMATS,
   canonicalDate,
+  compareDates,
   daysInMonth,
   formatDate,
   isValidCalendarDate,
@@ -70,6 +71,23 @@ describe('P2: date round-trip', () => {
           else expect(parsed).toEqual({ ok: false, code: 'date-impossible' });
         },
       ),
+    );
+  });
+
+  it('a two-digit date of birth resolves to the latest matching date that is not after today (Req 1.6)', () => {
+    fc.assert(
+      fc.property(calendarDateArb(1900, 2099), calendarDateArb(1950, 2099), (d, todayArb) => {
+        const parsed = parseDate(formatDate(d, 'D-M-YY'), { role: 'dob', today: todayArb });
+        if (!parsed.ok) {
+          // Only 29 February can fail, when the resolved year is not a leap year.
+          expect([d.m, d.d, parsed.code]).toEqual([2, 29, 'date-impossible']);
+          return;
+        }
+        expect(parsed.twoDigitYear).toBe(true);
+        expect([parsed.date.m, parsed.date.d, parsed.date.y % 100]).toEqual([d.m, d.d, d.y % 100]);
+        expect(compareDates(parsed.date, todayArb)).toBeLessThanOrEqual(0);
+        expect(compareDates({ ...parsed.date, y: parsed.date.y + 100 }, todayArb)).toBeGreaterThan(0);
+      }),
     );
   });
 });

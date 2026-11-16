@@ -59,7 +59,7 @@ export function formatDate(d: CalendarDate, f: DateFormat, digits?: "ascii" | "d
 2. Numeric patterns, tried in order: `YYYY-MM-DD`, then day-first `D[/-.]M[/-.]YYYY` and `D[/-.]M[/-.]YY`. Any separator mix within one date is rejected as `date-unparsed` to avoid guessing.
 3. Word patterns (Req 1.3): `<day> <month> <year>`, `<month> <day>, <year>`, where day and year may be digits or Hindi number words, and month is an English or Hindi month name or a 3-letter English short form. Hindi years: "उन्नीस सौ X" is 1900 + X, "दो हज़ार X" is 2000 + X, with "हज़ार" and "हजार" both accepted.
 4. Calendar check with the Gregorian leap-year rule (Req 1.5).
-5. Two-digit years (Req 1.6): DOB uses the latest year ending in those digits that is not after `today`; other dates use 2000 + YY. Either way a `date-two-digit-year` warning is added.
+5. Two-digit years (Req 1.6): DOB uses the latest year ending in those digits for which the whole date (day, month, year) is not after `today` (`resolveTwoDigitYear`), so "20-12-26" read on 16/11/2026 gives 1926, not a future 2026; other dates use 2000 + YY. Either way a `date-two-digit-year` warning is added. DOB plausibility (`dob-in-future`, `dob-implausible` above 120 whole years) is `checkDateOfBirth(date, today)`, called by `validateField`.
 6. Output is always canonical `DD/MM/YYYY` in ASCII digits (Req 1.4). The UI shows the value in Devanagari digits if the user typed Devanagari (steering file rule), using `toDevanagariDigits` only for display.
 
 ## Error handling

@@ -157,6 +157,7 @@ Each one is tied to requirement IDs in the spec that owns it (the "Correctness p
 | Property | File | What it checks | Result so far |
 |---|---|---|---|
 | P2 date round-trip (validation 1.1, 1.2, 1.4, 1.8) | `src/validation/dates.property.test.ts` | For any valid `{ y, m, d }` in 1900 to 2099, any of the five four-digit-year formats and ASCII or Devanagari digits, `parseDate(formatDate(d, f, digits))` returns `d`. `D-M-YY` is checked for role "other" and years 2000 to 2099. Two extra checks: a parsed date's canonical DD/MM/YYYY value parses back to the same date, and any written day/month/year numbers either parse to exactly those numbers or give `date-impossible` (never a different date). | Passed at 100 cases and at 20,000 cases (`FC_NUM_RUNS=20000`). No bug found. |
+| Two-digit DOB pivot (validation 1.6) | same file | For any date and any `today`, a date of birth written as `D-M-YY` keeps its day, month and last two year digits, is not after `today`, and adding 100 years would put it after `today` (the latest such year). Only 29 February may fail, as `date-impossible`, when the resolved year is not a leap year. | Passed at 100 and 20,000 cases. No bug found. |
 
 P1 (required fields filled or flagged), P4 (mapping idempotence) and the validator properties follow with the mapper and `validateField`. P3 (stitch-code round-trip) and P5 (LLM output never marks an invalid value as filled) come with the stitch-code and llm-adapter features.
 

@@ -16,7 +16,7 @@ Each task is one commit. Run `npm run typecheck` and `npm test` before committin
   - `src/validation/dates.property.test.ts`
   - _Requirements: 1.1, 1.2, 1.4, 1.8; Property: P2_
 
-- [ ] 5. Add two-digit-year pivot and DOB plausibility with an explicit `today`
+- [x] 5. Add two-digit-year pivot and DOB plausibility with an explicit `today`
   - _Requirements: 1.6, 2.1, 2.2, 2.3_
 
 - [ ] 6. Add English and Hindi month names, Hindi number words 0 to 99 and word-date parsing with unit tests

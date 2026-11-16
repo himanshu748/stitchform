@@ -4,4 +4,4 @@ export type { IssueCode } from './issues';
 export { ISSUE_CODES, SEVERITY, issue, messageFor } from './issues';
 export { hasDevanagariDigits, toAsciiDigits, toDevanagariDigits } from './digits';
 export type { CalendarDate, DateFormat, ParseDateOptions, ParseDateResult } from './dates';
-export { DATE_FORMATS, canonicalDate, compareDates, formatDate, isValidCalendarDate, parseDate } from './dates';
+export { DATE_FORMATS, ageOn, canonicalDate, checkDateOfBirth, compareDates, formatDate, isValidCalendarDate, parseDate, resolveTwoDigitYear } from './dates';
