@@ -34,7 +34,7 @@ Because Gemini browser access is not confirmed, the `gemini` provider is designe
 ```
 src/llm/
   types.ts            ProviderId, ProviderConfig, LlmRequest (LlmRequestField, LlmRequestAnswer), LlmSuggestion, LlmProvider, FallbackReason, LlmOutcome
-  prompt.ts           buildRequest(form, answers, mapping) -> LlmRequest (pure; labels and answers only)
+  prompt.ts           buildRequest(form, answers) -> LlmRequest (pure; labels and answers only)
   parse.ts            parseSuggestions(text) -> LlmSuggestion[] (pure, never throws)
   merge.ts            mergeSuggestions(form, ruleResult, suggestions, ctx) -> MappingResult (pure)
   openai-compatible.ts  one HTTP client for modal and ollama (fetch)
@@ -176,6 +176,14 @@ Task 1 (`types.ts`, `adapter.ts`, `index.ts`):
 - Until the provider clients exist (task 6), `assist` throws an `Error` for any other provider, and the message names only the provider ID, never an endpoint or a key. The settings panel cannot offer another provider yet; task 6 replaces this branch.
 - `index.ts` re-exports `assist`, `DEFAULT_PROVIDER_CONFIG` and the types `ProviderId`, `ProviderConfig`, `LlmOutcome` and `FallbackReason`. A unit test checks the list of exported values.
 - `src/llm/adapter.test.ts` covers the check "with provider `none` the full mapping and validation pipeline works without any network call". `fetch`, `XMLHttpRequest`, `WebSocket` and `EventSource` are replaced by stubs that record the call and throw (one test shows that the stubs do catch a call). A demo form goes through `mapAnswers` and `assist`, and a fast-check property repeats this for generated forms, answers, signature sets and days, with and without a cancelled signal, expecting the rule-based result back unchanged and no call.
+
+Task 2 (`prompt.ts`):
+
+- `buildRequest(form, answers)` takes no mapping result, although the module layout first listed one. `LlmRequest` carries no status or value from the mapping, so the rule-based result is not needed to build it; `mergeSuggestions` is where the rule-based result matters.
+- Every form field is sent, in form order, signature and photo fields included, because the system prompt tells the model not to suggest signatures and merge rule 4 drops any suggestion for them. `choices` is sent only for choice fields, as a copy.
+- Answers are sent in `seq` order with ties in input order, the order `mapAnswers` uses, so the model can tell which answer came last; `seq` and `source` themselves are not sent. `promptedFieldId` is kept only when it names a field of the form. An answer prompted for a field the form does not have goes as free text, which is also how the mapper treats it (it ends up in `unmatched`). Answer text is sent as entered, blank prompted answers included, since a blank answer is how the user clears a field.
+- Each request object is built key by key and never by spreading a `FormField` or an `Answer`. A unit test attaches image, signature-image, stitch-code and passphrase properties to every field and answer and checks that none of them reaches the serialised request. Another test, also run as a fast-check property over the P1 generators, checks that the serialised request has only the allowed key paths (`fields[].id`, `label`, `type`, `required`, `choices`; `answers[].text`, `promptedFieldId`, `lang`) and only string or boolean values, so no bounding box, page number or order number can be in it.
+- `buildRequest` is internal to the llm module; `index.ts` does not export it.
 
 ## Correctness properties
 
