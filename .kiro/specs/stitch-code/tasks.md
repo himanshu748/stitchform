@@ -2,7 +2,7 @@
 
 Each task is one commit. New npm dependencies go into README "Pre-existing work" in the same commit (commit-guard checks this).
 
-- [ ] 1. Add the byte format in `format.ts` with unit tests for encode/decode, magic, version and iteration bounds
+- [x] 1. Add the byte format in `format.ts` with unit tests for encode/decode, magic, version and iteration bounds
   - _Requirements: 2.3, 2.4, 5.4_
 
 - [ ] 2. Add `compress.ts` (deflate-raw both ways, 64 KiB output cap) with unit tests
