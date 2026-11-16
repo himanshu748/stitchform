@@ -1,0 +1,173 @@
+{
+  "note": "English label synonyms, hand-written for Stitchform. Keys are canonical field keys (they match the field IDs of the three fictional sample forms). Not a complete dictionary.",
+  "labels": {
+    "full-name": [
+      "full name",
+      "name",
+      "my name",
+      "your name",
+      "applicant name",
+      "applicant's name",
+      "applicants name",
+      "name of applicant",
+      "student name",
+      "student's name",
+      "name of student",
+      "candidate name",
+      "name of candidate",
+      "resident name"
+    ],
+    "dob": [
+      "date of birth",
+      "my date of birth",
+      "dob",
+      "d.o.b",
+      "d o b",
+      "birth date",
+      "birthdate",
+      "born on",
+      "birthday"
+    ],
+    "guardian-name": [
+      "parent or guardian name",
+      "parent/guardian name",
+      "parent / guardian name",
+      "name of parent or guardian",
+      "guardian name",
+      "guardian's name",
+      "guardians name",
+      "name of guardian",
+      "parent name",
+      "parent's name",
+      "guardian"
+    ],
+    "address": [
+      "address",
+      "postal address",
+      "home address",
+      "permanent address",
+      "residential address",
+      "current address",
+      "correspondence address",
+      "address for correspondence"
+    ],
+    "course": [
+      "course choice",
+      "choice of course",
+      "course applied for",
+      "course of study",
+      "programme of study",
+      "course name",
+      "course"
+    ],
+    "previous-marks": [
+      "previous marks",
+      "previous exam marks",
+      "marks in previous exam",
+      "marks in previous examination",
+      "marks obtained",
+      "previous percentage",
+      "percentage",
+      "marks"
+    ],
+    "photo": [
+      "photo",
+      "photograph",
+      "passport photo",
+      "passport size photo",
+      "passport-size photograph",
+      "affix photo",
+      "paste photo here"
+    ],
+    "signature": [
+      "signature",
+      "your signature",
+      "applicant's signature",
+      "applicants signature",
+      "signature of applicant",
+      "student's signature",
+      "signature of student",
+      "resident's signature"
+    ],
+    "income-band": [
+      "family income band",
+      "family income",
+      "annual family income",
+      "household income",
+      "income band",
+      "income group",
+      "income"
+    ],
+    "statement": [
+      "short statement",
+      "statement",
+      "personal statement",
+      "statement of purpose",
+      "about yourself",
+      "tell us about yourself"
+    ],
+    "declaration": [
+      "declaration",
+      "self declaration",
+      "self-declaration",
+      "i declare",
+      "i agree"
+    ],
+    "id-type": [
+      "id type",
+      "type of id",
+      "id document type",
+      "type of id document",
+      "identity document type",
+      "id proof type",
+      "id document"
+    ],
+    "sample-id-number": [
+      "sample id number",
+      "id number",
+      "id no",
+      "id card number",
+      "identity number",
+      "document number"
+    ],
+    "emergency-contact-name": [
+      "emergency contact name",
+      "name of emergency contact",
+      "emergency contact person",
+      "emergency contact",
+      "contact person name",
+      "contact person"
+    ],
+    "emergency-contact-phone": [
+      "emergency contact phone",
+      "emergency contact phone number",
+      "emergency contact number",
+      "emergency phone number",
+      "emergency phone",
+      "contact number",
+      "phone number",
+      "phone",
+      "mobile number",
+      "mobile",
+      "telephone number",
+      "telephone"
+    ],
+    "arrival-date": [
+      "arrival date",
+      "date of arrival",
+      "check-in date",
+      "check in date",
+      "date of joining",
+      "joining date",
+      "arrival"
+    ],
+    "departure-date": [
+      "departure date",
+      "date of departure",
+      "check-out date",
+      "check out date",
+      "leaving date",
+      "departure"
+    ]
+  }
+}

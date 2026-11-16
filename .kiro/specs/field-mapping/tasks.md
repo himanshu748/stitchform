@@ -10,11 +10,11 @@ Each task is one commit. Run `npm run typecheck` and `npm test` before committin
   - Duplicate IDs, out-of-range boxes, bad page index, empty choices are rejected
   - _Requirements: 1.3, 2.1, 2.2_
 
-- [ ] 3. Add the form-model arbitrary in `src/mapping/arbitraries.ts`
+- [x] 3. Add the form-model arbitrary in `src/mapping/arbitraries.ts`
   - Valid forms with 1 to 20 fields of every type; used by P1, P4 and P5
   - _Requirements: 1.1, 1.3_
 
-- [ ] 4. Write `normaliseLabel` and the EN and HI synonym data files with unit tests
+- [x] 4. Write `normaliseLabel` and the EN and HI synonym data files with unit tests
   - NFC, case folding, whitespace collapse, trailing ":" and "*" removed
   - Synonyms cover every label on the three sample forms
   - _Requirements: 4.2, 4.5_
