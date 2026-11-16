@@ -6,7 +6,7 @@ Each task is one commit. Run `npm run typecheck` and `npm test` before committin
   - `FieldType`, `BBox`, `FormField`, `PageInfo`, `FormModel`, `Answer`, `Issue`, `FieldResult`, `MappingResult` exactly as in design.md
   - _Requirements: 1.1, 1.2, 1.4_
 
-- [ ] 2. Implement `validateFormModel`, `addField` and `updateField` with unit tests
+- [x] 2. Implement `validateFormModel`, `addField` and `updateField` with unit tests
   - Duplicate IDs, out-of-range boxes, bad page index, empty choices are rejected
   - _Requirements: 1.3, 2.1, 2.2_
 
