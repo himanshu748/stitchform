@@ -117,7 +117,12 @@ All functions are pure and return new objects; nothing is mutated in place.
 5. Fields with no candidate: required gives `flagged` + `required-missing` (error); not required gives `empty` (Req 5.2, 5.3). `signature` fields use `signatures` instead of answers (Req 5.4). `photo` fields are always `empty` with a `photo-paste-after-print` info issue (Req 5.5).
 6. Every field ID of the form appears in `fields`, in form order.
 
-`toPromptedAnswers` emits one prompted answer per `filled` field (value as text) and per `flagged` field that has `raw`, with increasing `seq`. Because normalised values are fixed points of their validators (validation spec, Req 1.4 and 3.x), mapping them again gives the same result (P4).
+`toPromptedAnswers` emits one prompted answer per `filled` field (value as text) and per `flagged` field that has `raw`, with increasing `seq`. Because normalised values are fixed points of their validators (validation spec, Req 1.4 and 3.x), mapping them again gives the same fields (P4).
+
+Conventions settled during implementation (task 8):
+
+- `toPromptedAnswers` emits only results that carry `provenance`, which means they came from an answer. Signature fields come from the `signatures` set and never become text, which also keeps signatures out of the stitch code (stitch-code Req 3.2). `lang` is `"hi"` when the text contains Devanagari script, otherwise `"en"`; the mapper does not read it.
+- The first draft of P4 said the second mapping "equals" the first, ignoring `unmatched` and `seq`. While writing the property it became clear that two kinds of issue cannot survive the round trip by design: `date-two-digit-year` (the canonical `DD/MM/YYYY` value has four digits) and `free-text-ignored` (the losing free text is not carried over). The `toPromptedAnswers` unit test shows both. Req 6.2 and the P4 row below were reworded to say exactly what is kept.
 
 Conventions settled during implementation (task 6):
 
@@ -149,7 +154,7 @@ The five properties from PLAN.md section 7. This spec owns P1 and P4; the others
 | P1 | For any valid form model, any answers and any signature set, every required field in `mapAnswers` output is `filled` with a value that passes its validator, or `flagged` with at least one `error` issue. | field-mapping 5.1, 5.2, 5.4; validation 4.1 | field-mapping | `src/mapping/map-answers.property.test.ts` |
 | P2 | For every supported date format and any valid date, `parse(format(d))` equals `d`, including Devanagari digits. | validation 1.1, 1.2, 1.4, 1.8 | validation | `src/validation/dates.property.test.ts` |
 | P3 | Decrypting a stitch code with the right passphrase returns the original answers; any other passphrase, or any changed byte, never yields data. | stitch-code 5.1, 5.2, 2.3 | stitch-code | `src/stitch-code/round-trip.property.test.ts` |
-| P4 | `mapAnswers(form, toPromptedAnswers(mapAnswers(form, a, s)), s)` equals `mapAnswers(form, a, s)` (ignoring `unmatched` and `seq`). | field-mapping 6.1, 6.2 | field-mapping | `src/mapping/map-answers.property.test.ts` |
+| P4 | `mapAnswers(form, toPromptedAnswers(mapAnswers(form, a, s, ctx)), s, ctx)` gives every field the same status, value, raw text and provenance as `mapAnswers(form, a, s, ctx)`, with no new issue (only `date-two-digit-year` and `free-text-ignored` may drop out, and `unmatched` is empty), and `toPromptedAnswers` of that second result equals the first `toPromptedAnswers`. Same input always gives an equal result. | field-mapping 6.1, 6.2 | field-mapping | `src/mapping/map-answers.property.test.ts` |
 | P5 | For any string a fake LLM provider returns, no field ends `filled` with a value that fails its validator, and no user-entered value is replaced. | llm-adapter 5.1, 5.2, 5.3 | llm-adapter | `src/llm/merge.property.test.ts` |
 
 Generators (`src/mapping/arbitraries.ts`): a form-model arbitrary (1 to 20 fields, unique IDs, every field type, valid boxes), an answer arbitrary that mixes valid values, invalid values, empty strings, Devanagari digits and free text containing label synonyms. All generated names are fictional by construction (random strings), and fixtures are labelled demo data.

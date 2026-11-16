@@ -78,3 +78,23 @@ export function mapAnswers(
 
   return { formId: form.id, fields: Object.fromEntries(fields), unmatched };
 }
+
+const DEVANAGARI = /[\u0900-\u097f]/u;
+
+/**
+ * Turn a mapping result back into prompted answers (used by P4 and by the stitch code): one per
+ * `filled` field (its normalised value) and one per `flagged` field that kept the user's raw
+ * text, with `seq` 0, 1, 2, ... in the order of `result.fields`. Only results that came from an
+ * answer carry `provenance`, so signature fields, which come from the signatures set, are never
+ * turned into text. `lang` is "hi" when the text contains Devanagari script, otherwise "en";
+ * the mapper does not depend on it.
+ */
+export function toPromptedAnswers(result: MappingResult): Answer[] {
+  const out: Answer[] = [];
+  for (const r of Object.values(result.fields)) {
+    const text = r.status === 'filled' ? r.value : r.status === 'flagged' ? r.raw : undefined;
+    if (text === undefined || r.provenance === undefined) continue;
+    out.push({ text, source: r.provenance, lang: DEVANAGARI.test(text) ? 'hi' : 'en', promptedFieldId: r.fieldId, seq: out.length });
+  }
+  return out;
+}

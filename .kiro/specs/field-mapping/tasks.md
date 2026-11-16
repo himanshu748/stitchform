@@ -31,7 +31,7 @@ Each task is one commit. Run `npm run typecheck` and `npm test` before committin
   - `src/mapping/map-answers.property.test.ts`
   - _Requirements: 5.1, 5.2, 5.4; Property: P1_
 
-- [ ] 8. Implement `toPromptedAnswers` and property test P4: mapping idempotence
+- [x] 8. Implement `toPromptedAnswers` and property test P4: mapping idempotence
   - _Requirements: 6.1, 6.2; Property: P4_
 
 - [ ] 9. Manual-correction UI hooks (wired in lab-ui): confirm before deleting a field with a value

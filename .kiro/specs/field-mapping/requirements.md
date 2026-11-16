@@ -95,7 +95,7 @@ Every other module talks about a form through one shared field model. The rule-b
 
 6.1 THE SYSTEM SHALL produce the same mapping result for the same form model and the same answers, with no dependency on time, randomness or network.
 
-6.2 WHEN the mapping result is turned back into prompted answers and mapped again THE SYSTEM SHALL produce an equal mapping result.
+6.2 WHEN the mapping result is turned back into prompted answers and mapped again THE SYSTEM SHALL give every field the same status, value, raw text and provenance with no new issue, and turning that second result into prompted answers SHALL give the same answers. Only warnings about how an answer was written (such as `date-two-digit-year`, once the value is in canonical form) and `free-text-ignored` (free text is not carried over) may drop out.
 
 6.3 THE SYSTEM SHALL run the rule-based mapper without any network request.
 

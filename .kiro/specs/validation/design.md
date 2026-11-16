@@ -83,7 +83,7 @@ This spec owns P2 and supplies the validator that P1 and P5 depend on.
 | P1 | Every required field after mapping is `filled` with a value that passes its validator, or `flagged` with an `error` issue. | field-mapping 5.1, 5.2, 5.4; validation 4.1 | field-mapping | `src/mapping/map-answers.property.test.ts` |
 | P2 | For any valid `CalendarDate` in 1900 to 2099, any `DateFormat` and either digit set, `parseDate(formatDate(d, f, digits))` returns `d`. For `D-M-YY` the property holds for `role: "other"` and years 2000 to 2099, the range the pivot maps back to. | validation 1.1, 1.2, 1.4, 1.8 | validation | `src/validation/dates.property.test.ts` |
 | P3 | Right passphrase returns the original answers; wrong passphrase or tampered bytes never yield data. | stitch-code 5.1, 5.2, 2.3 | stitch-code | `src/stitch-code/round-trip.property.test.ts` |
-| P4 | Mapping already-mapped answers again gives the same result. | field-mapping 6.1, 6.2; validation 3.5 | field-mapping | `src/mapping/map-answers.property.test.ts` |
+| P4 | Mapping already-mapped answers again gives the same field values (exact statement in the field-mapping design). | field-mapping 6.1, 6.2; validation 3.5 | field-mapping | `src/mapping/map-answers.property.test.ts` |
 | P5 | No LLM output makes a field `filled` with a value that fails its validator. | llm-adapter 5.1, 5.2, 5.3 | llm-adapter | `src/llm/merge.property.test.ts` |
 
 Extra properties for this spec (not numbered in PLAN.md, kept local):

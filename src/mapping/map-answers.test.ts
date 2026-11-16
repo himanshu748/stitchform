@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Answer, FormField, FormModel } from '../form-model';
 import type { ValidationContext } from '../validation';
-import { mapAnswers } from './map-answers';
+import { mapAnswers, toPromptedAnswers } from './map-answers';
 
 // Fictional demo form, demo people and demo values only (SAMPLE / DEMO DATA).
 const ctx: ValidationContext = { today: { y: 2026, m: 11, d: 16 }, lang: 'en' };
@@ -168,6 +168,42 @@ describe('mapAnswers: free text (Req 4.1, 4.3, 4.4)', () => {
     const r = mapAnswers(form, [free('hello there, name Asha Verma')], none, ctx);
     expect(r.unmatched).toEqual(['hello there']);
     expect(r.fields['full-name']?.value).toBe('Asha Verma');
+  });
+});
+
+describe('toPromptedAnswers (Req 6.2)', () => {
+  const answers = [
+    free('name Asha Verma, date of birth 5-3-04', 'voice'),
+    prompted('address', '12 Lantern Lane'),
+    free('address 7 Old Mill Road'),
+    prompted('emergency-contact-phone', 'nine eight'),
+    prompted('id-type', 'पता नहीं'),
+    prompted('blood-group', 'O positive'),
+  ];
+
+  it('emits filled values and flagged raw text, skipping empty, photo and signature fields', () => {
+    const r = mapAnswers(form, answers, new Set(['signature']), ctx);
+    expect(toPromptedAnswers(r)).toEqual([
+      { text: 'Asha Verma', source: 'voice', lang: 'en', promptedFieldId: 'full-name', seq: 0 },
+      { text: '05/03/2004', source: 'voice', lang: 'en', promptedFieldId: 'dob', seq: 1 },
+      { text: '12 Lantern Lane', source: 'typed', lang: 'en', promptedFieldId: 'address', seq: 2 },
+      { text: 'nine eight', source: 'typed', lang: 'en', promptedFieldId: 'emergency-contact-phone', seq: 3 },
+      { text: 'पता नहीं', source: 'typed', lang: 'hi', promptedFieldId: 'id-type', seq: 4 },
+    ]);
+  });
+
+  it('maps back to the same fields; only warnings about how an answer was written drop out', () => {
+    const signatures = new Set(['signature']);
+    const first = mapAnswers(form, answers, signatures, ctx);
+    const again = mapAnswers(form, toPromptedAnswers(first), signatures, ctx);
+    expect(again.unmatched).toEqual([]);
+    expect(first.fields.dob?.issues.map((i) => i.code)).toEqual(['date-two-digit-year']);
+    expect(first.fields.address?.issues.map((i) => i.code)).toEqual(['free-text-ignored']);
+    expect(again.fields).toEqual({
+      ...first.fields,
+      dob: { ...first.fields.dob, issues: [] },
+      address: { ...first.fields.address, issues: [] },
+    });
   });
 });
 

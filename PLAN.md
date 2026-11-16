@@ -241,7 +241,7 @@ Required invariants:
 Extras:
 
 - **P3 Stitch code round-trip:** decrypting with the right passphrase returns the original answers; any other passphrase never yields data.
-- **P4 Mapping idempotence:** mapping already-mapped answers again gives the same result.
+- **P4 Mapping idempotence:** mapping already-mapped answers again gives the same field values.
 - **P5 LLM safety:** for any string a fake LLM adapter returns, no field is marked "filled" with a value that fails its validator.
 
 ---

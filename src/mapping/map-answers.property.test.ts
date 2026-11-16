@@ -3,6 +3,12 @@
 // any answers and any signature set, every required field is `filled` with a value that passes
 // its validator, or `flagged` with at least one error. Photo fields are the one exception by
 // design (Req 5.5): they are always `empty` with the paste-after-print info issue.
+// P4 (field-mapping Req 6.1, 6.2): mapping is deterministic, and mapping the prompted answers
+// from toPromptedAnswers again gives every field the same status, value, raw text and
+// provenance with no new issue. Only warnings about how an answer was written
+// (date-two-digit-year, once the value is canonical) and free-text-ignored (free text is not
+// carried over) may drop out. Turning that second result into answers gives the same answers,
+// so a refilled form saves to the same stitch code content.
 // Forms, answers and signature sets are generated demo data (SAMPLE / DEMO DATA).
 
 import fc from 'fast-check';
@@ -11,7 +17,7 @@ import type { FieldResult, FormField } from '../form-model';
 import { validateField, type ValidationContext } from '../validation';
 import { validationContextArb } from '../validation/arbitraries';
 import { formModelArb, mappingInputArb, signaturesArb } from './arbitraries';
-import { mapAnswers } from './map-answers';
+import { mapAnswers, toPromptedAnswers } from './map-answers';
 
 const hasError = (r: FieldResult): boolean => r.issues.some((i) => i.severity === 'error');
 
@@ -85,5 +91,40 @@ describe('P1: every required field is filled or flagged', () => {
     }
     expect(statuses).toEqual(new Set(['filled', 'flagged', 'empty']));
     expect(filledFromFreeText).toBeGreaterThan(0);
+  });
+});
+
+/** Issue codes that may disappear when a result is mapped again from its prompted answers. */
+const MAY_DROP = new Set(['date-two-digit-year', 'free-text-ignored']);
+
+describe('P4: mapping is deterministic and idempotent', () => {
+  it('gives an equal result for the same input (Req 6.1)', () => {
+    fc.assert(
+      fc.property(mappingInputArb(), validationContextArb(), ([form, answers, signatures], ctx) => {
+        expect(mapAnswers(form, answers, signatures, ctx)).toEqual(mapAnswers(form, answers, signatures, ctx));
+      }),
+    );
+  });
+
+  it('mapping toPromptedAnswers of a result again keeps every field and adds no issue (Req 6.2)', () => {
+    fc.assert(
+      fc.property(mappingInputArb(), validationContextArb(), ([form, answers, signatures], ctx) => {
+        const first = mapAnswers(form, answers, signatures, ctx);
+        const prompted = toPromptedAnswers(first);
+        const again = mapAnswers(form, prompted, signatures, ctx);
+        expect(again.formId).toBe(first.formId);
+        expect(again.unmatched).toEqual([]);
+        for (const field of form.fields) {
+          const a = first.fields[field.id];
+          const b = again.fields[field.id];
+          const { issues: issuesA, ...restA } = a ?? { issues: [] };
+          const { issues: issuesB, ...restB } = b ?? { issues: [] };
+          expect(restB).toEqual(restA);
+          for (const i of issuesB) expect(issuesA).toContainEqual(i);
+          for (const i of issuesA) if (!MAY_DROP.has(i.code)) expect(issuesB).toContainEqual(i);
+        }
+        expect(toPromptedAnswers(again)).toEqual(prompted);
+      }),
+    );
   });
 });

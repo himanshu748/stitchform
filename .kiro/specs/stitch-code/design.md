@@ -92,7 +92,7 @@ This spec owns P3.
 | P1 | Required fields after mapping are filled with valid values or flagged. Also checked after refill from a stitch code. | field-mapping 5.1, 5.2, 5.4; validation 4.1 | field-mapping | `src/mapping/map-answers.property.test.ts` |
 | P2 | Date round-trip for every supported format, including Devanagari digits. | validation 1.1, 1.2, 1.4, 1.8 | validation | `src/validation/dates.property.test.ts` |
 | P3 | For any form ID and answers (`fc.array` of `[fieldId, fc.string({ unit: "grapheme" })]`) and any passphrase, `open(seal(x, p), p)` equals `x`; for any `q !== p`, `open(seal(x, p), q)` fails; flipping any one byte of the output makes `open` fail. | stitch-code 5.1, 5.2, 2.3, 3.4 | stitch-code | `src/stitch-code/round-trip.property.test.ts` |
-| P4 | Mapping is idempotent, so a refill gives the same result as the original session. | field-mapping 6.1, 6.2 | field-mapping | `src/mapping/map-answers.property.test.ts` |
+| P4 | Mapping is idempotent, so a refill gives the same filled fields as the original session (exact statement in the field-mapping design). | field-mapping 6.1, 6.2 | field-mapping | `src/mapping/map-answers.property.test.ts` |
 | P5 | No LLM output marks a field filled with an invalid value. | llm-adapter 5.1, 5.2, 5.3 | llm-adapter | `src/llm/merge.property.test.ts` |
 
 P3 uses `fc.asyncProperty`. To keep the test fast, the property calls the internal `sealWithIterations` with a low iteration count (1,000), and one example test checks that the public `createStitchCode` writes 600,000 into the header. This is a deliberate test-only shortcut and is noted in KIRO_USAGE.md when it is written.
