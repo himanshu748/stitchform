@@ -27,11 +27,13 @@ Each task is one commit. New npm dependencies go into README "Pre-existing work"
 - [x] 8. Install `qrcode` and `jsqr` (exact versions), add README entries, implement `qr.ts` encode with the too-large path
   - _Requirements: 4.1, 4.2_
 
-- [ ] 9. Implement QR decoding from camera frames and uploaded images, and `.stitch` file open
+- [x] 9. Implement QR decoding from camera frames and uploaded images, and `.stitch` file open
   - _Requirements: 4.3, 4.4_
 
-- [ ] 10. Stitch-code panel UI (in lab-ui): passphrase dialog, progress during derivation, warnings
+- [x] 10. Stitch-code panel UI (in lab-ui): passphrase dialog, progress during derivation, warnings
   - _Requirements: 2.5, 6.1, 6.2_
 
-- [ ] 11. Measure PBKDF2 time on a laptop and, if available, a low-end phone; record the numbers and devices in README and KIRO_USAGE.md (no estimates)
+- [x] 11. Measure PBKDF2 time on a laptop and, if available, a low-end phone; record the numbers and devices in README and KIRO_USAGE.md (no estimates)
   - _Requirements: 2.5_
+
+2026-11-17: QR image upload/refill is exercised in Playwright. Camera-frame decode and .stitch opening are implemented; physical camera scanning remains untested. PBKDF2 benchmark: five laptop runs recorded; low-end phone not available. A custom layout must be reopened before its text-only code can be applied.

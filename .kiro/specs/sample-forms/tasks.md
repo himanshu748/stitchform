@@ -17,7 +17,7 @@ Each task is one commit. Generated files are committed together with the script 
 - [x] 5. Add `demo-answers.json` with fictional demo people, labelled DEMO DATA
   - _Requirements: 2.4_
 
-- [ ] 6. "Try a sample" buttons and downloads on the start screen (in lab-ui)
+- [x] 6. "Try a sample" buttons and downloads on the start screen (in lab-ui)
   - _Requirements: 4.1, 4.2_
 
 - [ ] 7. Run the form-qa custom agent on `public/samples/` and fix any finding; record the run in KIRO_USAGE.md

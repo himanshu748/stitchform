@@ -34,5 +34,5 @@ Each task is one commit. Run `npm run typecheck` and `npm test` before committin
 - [x] 8. Implement `toPromptedAnswers` and property test P4: mapping idempotence
   - _Requirements: 6.1, 6.2; Property: P4_
 
-- [ ] 9. Manual-correction UI hooks (wired in lab-ui): confirm before deleting a field with a value
+- [x] 9. Manual-correction UI hooks (wired in lab-ui): confirm before deleting a field with a value
   - _Requirements: 2.1, 2.3_

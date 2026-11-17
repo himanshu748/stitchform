@@ -29,5 +29,5 @@ Each task is one commit. Run `npm run typecheck` and `npm test` before committin
 - [x] 8. Property tests for validator idempotence and totality
   - _Requirements: 3.5, 5.3; supports Property: P1, P4, P5_
 
-- [ ] 9. Re-validate on edit (wired in lab-ui; covered by the e2e smoke test)
+- [x] 9. Re-validate on edit (wired in lab-ui; covered by the e2e smoke test)
   - _Requirements: 5.4_

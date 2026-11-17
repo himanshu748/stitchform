@@ -24,7 +24,7 @@ Each task is one commit. No task deploys, serves or runs the Modal app.
 - [x] 7. Implement `key-store.ts` (memory default, optional remember, forget) with unit tests
   - _Requirements: 4.1, 4.2, 4.3_
 
-- [ ] 8. LLM settings panel and first-use notice (in lab-ui): off by default, Modal preselected when turned on
+- [x] 8. LLM settings panel and first-use notice (in lab-ui): off by default, Modal preselected when turned on
   - _Requirements: 1.3, 1.4, 2.4, 3.1, 4.2_
 
 - [x] 9. Gate check for Gemini: confirm browser CORS and free-tier terms in official Google docs (Context7 or ai.google.dev). If confirmed, implement `gemini.ts` and show it; if not, record "not confirmed, left out" in README and KIRO_USAGE.md
