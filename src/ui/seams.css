@@ -1,0 +1,3 @@
+/* First visual pass: "Light the seam when a field is completed." */
+.patch[data-status="filled"]{outline:2px dashed #a9c859;animation:stitch 500ms ease-out}
+@keyframes stitch{from{transform:scale(.98)}to{transform:scale(1)}}
