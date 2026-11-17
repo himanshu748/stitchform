@@ -140,3 +140,26 @@ LLM help is off by default and the app works fully without it. If you deploy the
 ## License
 
 [MIT](LICENSE)
+
+## Optional Modal endpoint (owner action after approval)
+
+The app's no-LLM path needs no account, server or key. This file is prepared, not deployed or GPU-tested. Modal proxy-auth CORS preflight remains unverified; do not promise browser access until it is checked on the deployed origin. Gemini browser access and free-tier suitability are not confirmed for this implementation, so Gemini is left out.
+
+After explicit deployment approval, the owner can configure exact origins and run:
+
+```sh
+export STITCHFORM_ALLOWED_ORIGINS='["http://localhost:5173","http://localhost:4173","https://YOUR-APP.vercel.app"]'
+modal deploy modal/stitchform_llm.py
+```
+
+Create a Proxy Token in Modal's dashboard and enter `token-id.token-secret` in the app. The client uses Bearer auth. Keep the token private. Do not make the endpoint public to bypass a failed preflight. First check `/health`, an unauthenticated `OPTIONS` request with `Origin` and `Access-Control-Request-Headers: authorization,content-type`, and one browser request after approval.
+
+Modal Starter includes $30/month in credits and requires a payment method. L4 list price checked during design: $0.000222/GPU-second (about $0.80/hour GPU only); CPU, memory, storage and cold starts add charges. Credits are not a hard free-use guarantee. In Usage & Billing set the workspace budget/spend limit within the remaining free credit before use; confirm that the account actually enforces the limit. Do not add billing or start compute without approval. See [billing](https://modal.com/docs/guide/billing), [pricing](https://modal.com/pricing) and [proxy auth](https://modal.com/docs/guide/webhook-proxy-auth).
+
+For local Ollama, start its server with an explicit allow list, as described in [Ollama's FAQ](https://docs.ollama.com/faq):
+
+```sh
+OLLAMA_ORIGINS='http://localhost:5173,http://localhost:4173' ollama serve
+```
+
+Use `http://localhost:11434/v1` and a model already installed on your machine. Hosted browser access to localhost also depends on browser local-network permissions. No provider was contacted to validate inference.

@@ -211,3 +211,11 @@ From the Kiro docs (pages cited in PLAN.md section 8) and what was observed on t
 - [ ] Optional: generate foundation steering files from the IDE and compare them with the hand-written `product.md`, `tech.md` and `structure.md`.
 - [ ] Optional: open the Agent Hooks panel to confirm the four hook files load in the IDE, and record the panel for the video.
 - [ ] Optional: install the Context7 power from the Powers panel or [kiro.dev/powers](https://kiro.dev/powers/) if you want to try powers; tell me and I will record the result here.
+
+## Codex continuation, 2026-11-17
+
+After Kiro's reported monthly usage limit interrupted the build, the owner continued this thread with Codex. Changes from this point are Codex work, not additional Kiro execution. The inherited LLM client and key store passed 558 tests and TypeScript checks before being committed separately. Existing Kiro evidence above remains historical evidence at its recorded boundary.
+
+Official docs refreshed: Modal's vLLM example and billing/proxy-auth guides, Google's API-key guide (Gemini still not confirmed for this browser/free-tier implementation), Ollama FAQ, and the vLLM v0.21.0 source. The pinned vLLM parser uses separate argv values for `--allowed-origins` (`list[str]` with `nargs='+'`), rather than the spec's proposed JSON argument. The prepared Modal file converts a JSON configuration variable into those argv values. Only `py_compile` ran; no deployment, image build, GPU, CORS or model inference was performed.
+
+Context7 MCP was used directly by Codex to resolve `/hopding/pdf-lib` and `/naptha/tesseract.js/v7.0.0`, then query PDF drawing and self-hosted OCR. It confirmed bottom-left PDF coordinates, font measurement, image embedding, the local worker/core/language paths, and explicit `blocks: true` output for word boxes. This is additional docs evidence, not a Kiro MCP run.
