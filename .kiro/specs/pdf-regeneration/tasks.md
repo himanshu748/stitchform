@@ -11,7 +11,7 @@ Each task is one commit. New dependencies and the font go into README "Pre-exist
 - [ ] 3. Implement `fit.ts` with an injected measure function and its property test
   - _Requirements: 2.2, 2.3_
 
-- [ ] 4. Install `pdf-lib@1.17.1` and `@pdf-lib/fontkit@1.1.1`; add Noto Sans Devanagari (v2.007, OFL) to `public/fonts/` with its licence file; README entries
+- [x] 4. Install `pdf-lib@1.17.1` and `@pdf-lib/fontkit@1.1.1`; add Noto Sans Devanagari (v2.007, OFL) to `public/fonts/` with its licence file; README entries
   - _Requirements: 3.2_
 
 - [ ] 5. Implement `buildPdf` for the clean background with Latin text, checkboxes, signatures and metadata; Node tests reload the output with `PDFDocument.load`

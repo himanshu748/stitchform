@@ -11,7 +11,7 @@ Each task is one commit. New dependencies and downloaded data go into README "Pr
 - [ ] 3. Implement `camera.ts` with track cleanup and every documented error path
   - _Requirements: 1.1, 1.2, 1.5_
 
-- [ ] 4. Install `tesseract.js@7.0.0`, add `scripts/copy-ocr-assets.mjs` (worker, 4 core files, `eng` and `hin` data), commit the assets, add README entries
+- [x] 4. Install `tesseract.js@7.0.0`, add `scripts/copy-ocr-assets.mjs` (worker, 4 core files, `eng` and `hin` data), commit the assets, add README entries
   - _Requirements: 3.3, 5.1_
 
 - [ ] 5. Implement `worker.ts` (single lazy worker, `rotateAuto`, `blocks` output, progress logger) and `words.ts` with a box-range property test

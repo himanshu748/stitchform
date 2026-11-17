@@ -85,10 +85,14 @@ From the initial commit created by [T3 Code](https://t3.codes):
 
 Third-party npm packages, pinned to exact versions in `package.json`.
 
-Runtime packages (`dependencies`). They go into the app bundle once the UI imports them, which happens in the lab-ui milestone; today's placeholder page does not import them yet:
+Runtime packages (`dependencies`):
 
 | Package | Version | Licence | Used for |
 |---|---|---|---|
+| `pdf-lib` | 1.17.1 | MIT | browser PDF generation and sample generator |
+| `@pdf-lib/fontkit` | 1.1.1 | MIT | Hindi font comparison in PDF verification |
+| `tesseract.js` | 7.0.0 | Apache-2.0 | OCR in a local Web Worker |
+| `tesseract.js-core` | 7.0.0 | Apache-2.0 | self-hosted WebAssembly engine (transitive dependency) |
 | `qrcode` | 1.5.4 | MIT | stitch-code QR encoding (`src/stitch-code/qr.ts`) |
 | `jsqr` | 1.4.0 | Apache-2.0 | stitch-code QR decoding; scanning arrives with the UI, and the tests already use it to scan generated codes |
 
@@ -163,3 +167,7 @@ OLLAMA_ORIGINS='http://localhost:5173,http://localhost:4173' ollama serve
 ```
 
 Use `http://localhost:11434/v1` and a model already installed on your machine. Hosted browser access to localhost also depends on browser local-network permissions. No provider was contacted to validate inference.
+
+Sample-name check, 2026-11-17: quoted web searches for all three full institution names found no exact real-institution match. Search results cannot prove a name is globally unused. All are explicitly marked fictional.
+
+Bundled OCR assets are copied from `tesseract.js@7.0.0` and its `tesseract.js-core@7.0.0` dependency, with their Apache-2.0 notices. `eng` and `hin` traineddata come from [naptha/tessdata 4.0.0](https://github.com/naptha/tessdata) under Apache-2.0. The app serves them from `public/tesseract/`, never a third-party CDN. Regenerate with `node scripts/copy-ocr-assets.mjs` after installing dependencies. Noto Sans Devanagari Regular 2.007 is bundled in `public/fonts/` with `OFL.txt` from its official release (SIL OFL 1.1). Hindi PDF values are browser-shaped images and cannot be searched or selected.
