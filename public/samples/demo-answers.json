@@ -1,0 +1,22 @@
+{
+  "label": "SAMPLE / DEMO DATA",
+  "people": [
+    {
+      "name": "Asha Willow (fictional)",
+      "answers": {
+        "full-name": "Asha Willow",
+        "dob": "5 March 2004",
+        "address": "17 Paper Lane, Demo Town",
+        "emergency-contact-name": "Ravi Willow",
+        "arrival-date": "2026-12-01"
+      }
+    },
+    {
+      "name": "दीपक मेघ (काल्पनिक)",
+      "answers": {
+        "full-name": "दीपक मेघ",
+        "dob": "०५/०३/२००४"
+      }
+    }
+  ]
+}

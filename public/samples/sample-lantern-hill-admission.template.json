@@ -1,0 +1,134 @@
+{
+  "id": "sample-lantern-hill-admission",
+  "title": "Lantern Hill College of Arts and Sciences (fictional)",
+  "source": "sample",
+  "pages": [
+    {
+      "index": 0,
+      "widthPt": 595.28,
+      "heightPt": 841.89
+    }
+  ],
+  "fields": [
+    {
+      "id": "full-name",
+      "label": "Full name",
+      "type": "text",
+      "required": true,
+      "bbox": {
+        "x": 0.08,
+        "y": 0.21,
+        "w": 0.84,
+        "h": 0.036
+      },
+      "page": 0
+    },
+    {
+      "id": "dob",
+      "label": "Date of birth",
+      "type": "date",
+      "required": true,
+      "bbox": {
+        "x": 0.08,
+        "y": 0.275,
+        "w": 0.84,
+        "h": 0.036
+      },
+      "page": 0,
+      "dateRole": "dob"
+    },
+    {
+      "id": "guardian",
+      "label": "Guardian name",
+      "type": "text",
+      "required": true,
+      "bbox": {
+        "x": 0.08,
+        "y": 0.33999999999999997,
+        "w": 0.84,
+        "h": 0.036
+      },
+      "page": 0
+    },
+    {
+      "id": "address",
+      "label": "Address",
+      "type": "text",
+      "required": true,
+      "bbox": {
+        "x": 0.08,
+        "y": 0.405,
+        "w": 0.84,
+        "h": 0.036
+      },
+      "page": 0
+    },
+    {
+      "id": "course",
+      "label": "Course choice",
+      "type": "choice",
+      "required": true,
+      "bbox": {
+        "x": 0.08,
+        "y": 0.47,
+        "w": 0.84,
+        "h": 0.036
+      },
+      "page": 0,
+      "choices": [
+        "Arts (demo)",
+        "Sciences (demo)"
+      ]
+    },
+    {
+      "id": "marks",
+      "label": "Previous marks",
+      "type": "number",
+      "required": false,
+      "bbox": {
+        "x": 0.08,
+        "y": 0.535,
+        "w": 0.84,
+        "h": 0.036
+      },
+      "page": 0
+    },
+    {
+      "id": "photo",
+      "label": "Photo",
+      "type": "photo",
+      "required": false,
+      "bbox": {
+        "x": 0.08,
+        "y": 0.6,
+        "w": 0.84,
+        "h": 0.036
+      },
+      "page": 0
+    },
+    {
+      "id": "signature",
+      "label": "Signature",
+      "type": "signature",
+      "required": true,
+      "bbox": {
+        "x": 0.08,
+        "y": 0.665,
+        "w": 0.84,
+        "h": 0.036
+      },
+      "page": 0
+    }
+  ],
+  "kind": "College admission",
+  "labelsHi": {
+    "full-name": "पूरा नाम",
+    "dob": "जन्म तिथि",
+    "guardian": "अभिभावक का नाम",
+    "address": "पता",
+    "course": "पाठ्यक्रम",
+    "marks": "पिछले अंक",
+    "photo": "तस्वीर",
+    "signature": "हस्ताक्षर"
+  }
+}
