@@ -18,7 +18,7 @@ Each task is one commit. No task deploys, serves or runs the Modal app.
   - `src/llm/merge.property.test.ts`
   - _Requirements: 5.1, 5.2, 5.3, 5.5; Property: P5, P1_
 
-- [ ] 6. Implement the OpenAI-compatible client for Modal and Ollama with timeout, cancel and status handling, tested with a fake `fetch`
+- [x] 6. Implement the OpenAI-compatible client for Modal and Ollama with timeout, cancel and status handling, tested with a fake `fetch`
   - _Requirements: 2.1, 2.2, 3.3, 6.1, 6.2, 6.3_
 
 - [ ] 7. Implement `key-store.ts` (memory default, optional remember, forget) with unit tests

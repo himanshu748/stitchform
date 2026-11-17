@@ -2,8 +2,9 @@
 // FEAT-003 acceptance check that the whole typed, no-LLM path (rule-based mapping, validation,
 // adapter) makes no network call: every network API a page script can use is replaced by a stub
 // that records the call and throws. Also examples for assistWithProvider with a fake provider
-// (Req 1.4, 5.1 to 5.5); its property P5 is in merge.property.test.ts. The form, answers, dates
-// and replies are SAMPLE / DEMO DATA.
+// (Req 1.4, 5.1 to 5.5, and the fallbacks of Req 6.1 and 6.2); its property P5 is in
+// merge.property.test.ts, and the Modal and Ollama client is tested in openai-compatible.test.ts.
+// The form, answers, dates and replies are SAMPLE / DEMO DATA.
 
 import fc from 'fast-check';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -15,6 +16,7 @@ import { validationContextArb } from '../validation/arbitraries';
 import { DEFAULT_PROVIDER_CONFIG, assist, assistWithProvider } from './adapter';
 import * as publicApi from './index';
 import { buildRequest } from './prompt';
+import { ProviderError } from './provider-error';
 import type { LlmProvider, LlmRequest, ProviderConfig } from './types';
 
 const NETWORK_APIS = ['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource'] as const;
@@ -113,21 +115,23 @@ describe('provider none (Req 1.1, 1.4)', () => {
 });
 
 describe('one adapter (Req 1.2)', () => {
-  it('exposes only assist and the default provider', () => {
-    expect(Object.keys(publicApi).sort()).toEqual(['DEFAULT_PROVIDER_CONFIG', 'assist']);
+  it('exposes only assist, the default provider, the Ollama default and the endpoint check', () => {
+    expect(Object.keys(publicApi).sort()).toEqual(['DEFAULT_OLLAMA_BASE_URL', 'DEFAULT_PROVIDER_CONFIG', 'assist', 'chatCompletionsUrl']);
   });
 
-  it('refuses a provider whose client is not built yet (task 6), sends nothing and names no endpoint or key', async () => {
-    const configs: ProviderConfig[] = [
-      { id: 'modal', endpoint: 'https://demo.invalid', proxyToken: 'demo-token' },
-      { id: 'ollama', baseUrl: 'http://localhost:11434/v1', model: 'demo-model' },
-      { id: 'gemini', apiKey: 'demo-key', model: 'demo-model' },
+  it('refuses Gemini, which is not offered, and a configuration the settings panel should have caught, without sending anything or naming a key', async () => {
+    const refused: [ProviderConfig, ErrorConstructor | RangeErrorConstructor, string][] = [
+      [{ id: 'gemini', apiKey: 'demo-key', model: 'demo-model' }, Error, 'LLM provider "gemini" is not available in this build'],
+      [{ id: 'modal', endpoint: 'http://demo.invalid', proxyToken: 'wk-demo.ws-demo' }, RangeError, 'The Modal endpoint is not an https URL Stitchform can use'],
+      [{ id: 'modal', endpoint: 'https://demo.invalid', proxyToken: 'wk-demo ws-demo' }, RangeError, 'The Modal proxy token has characters a request header cannot hold'],
+      [{ id: 'ollama', baseUrl: 'not a url', model: 'demo-model' }, RangeError, 'The Ollama base URL is not a URL Stitchform can use'],
+      [{ id: 'ollama', baseUrl: 'http://localhost:11434/v1', model: '  ' }, RangeError, 'No Ollama model is chosen'],
     ];
     const ruleResult = mapAnswers(form, answers, new Set(), ctx);
-    for (const config of configs) {
+    for (const [config, type, message] of refused) {
       const error = await assist(config, form, answers, ruleResult, new AbortController().signal, ctx).catch((e: unknown) => e);
-      expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toBe(`LLM provider "${config.id}" is not available in this build`);
+      expect(error).toBeInstanceOf(type);
+      expect((error as Error).message).toBe(message);
     }
     expect(networkCalls).not.toHaveBeenCalled();
   });
@@ -208,5 +212,38 @@ describe('assistWithProvider with a fake provider (Req 1.4, 5.1 to 5.5)', () => 
     expect(outcome).toEqual({ kind: 'fallback', result: ruleResult, reason: 'cancelled' });
     expect(outcome.result).toBe(ruleResult);
     expect(provider.requests).toHaveLength(1);
+  });
+
+  it('turns a failed request into a fallback with the rule-based result (Req 6.1, 6.2)', async () => {
+    const failing = (error: unknown): LlmProvider => ({ id: 'modal', complete: () => Promise.reject(error) });
+    const cases: [ProviderError, Record<string, unknown>][] = [
+      [new ProviderError('timeout'), { reason: 'timeout' }],
+      [new ProviderError('network'), { reason: 'network' }],
+      [new ProviderError('warming-up'), { reason: 'warming-up' }],
+      [new ProviderError('bad-output'), { reason: 'bad-output' }],
+      [new ProviderError('http', 401), { reason: 'http', status: 401 }],
+      [new ProviderError('http', 500), { reason: 'http', status: 500 }],
+    ];
+    for (const [error, expected] of cases) {
+      const outcome = await assistWithProvider(failing(error), form, answers, ruleResult, signal(), ctx);
+      expect(outcome).toEqual({ kind: 'fallback', result: ruleResult, ...expected });
+      expect(outcome.result).toBe(ruleResult);
+    }
+    // The user's cancel wins over whatever the provider rejected with.
+    const controller = new AbortController();
+    const cancelledThenFailed: LlmProvider = {
+      id: 'modal',
+      complete: () => {
+        controller.abort();
+        return Promise.reject(new ProviderError('network'));
+      },
+    };
+    expect(await assistWithProvider(cancelledThenFailed, form, answers, ruleResult, controller.signal, ctx)).toEqual({ kind: 'fallback', result: ruleResult, reason: 'cancelled' });
+  });
+
+  it('passes on a rejection that is not a ProviderError, since that is a bug', async () => {
+    const bug = new TypeError('demo bug');
+    const provider: LlmProvider = { id: 'ollama', complete: () => Promise.reject(bug) };
+    await expect(assistWithProvider(provider, form, answers, ruleResult, signal(), ctx)).rejects.toBe(bug);
   });
 });

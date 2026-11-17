@@ -26,6 +26,9 @@ Requirements: [requirements.md](requirements.md). Uses `FormModel`, `Answer`, `M
 | Gemini | REST `POST /v1beta/models/{model}:generateContent`; keys in the `x-goog-api-key` header; key docs say "Never expose keys client-side in production ... run a backend proxy". Browser CORS for this endpoint: **not confirmed** in the docs read. | [Gemini API reference](https://aistudio.google.com/api-reference/generate-content), [Gemini API keys](https://aistudio.google.com/docs/api-key) |
 | `fetch` | Rejects only on network failure (`TypeError`, which also covers a blocked request), or `AbortError` when aborted; HTTP error statuses resolve normally and must be checked with `response.ok` / `status` | [MDN fetch](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch) |
 | `AbortSignal.timeout(ms)`, `AbortSignal.any([...])` | 20 s timeout (aborts with a `TimeoutError` `DOMException`) combined with the user's Cancel button | [MDN AbortSignal.timeout](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static) |
+| `AbortSignal.any` reason, `RequestInit` options (read 2026-11-16) | The combined signal takes "the reason of the first abort signal that is aborted". `redirect: "error"`: "Reject the promise with a network error when a redirect status is returned"; `credentials: "omit"`: "Never send credentials"; `cache: "no-store"` neither reads nor updates the HTTP cache | [MDN AbortSignal.any](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/any_static), [MDN RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit) |
+| Loopback over http (read 2026-11-16) | An origin is potentially trustworthy with scheme `https`, a host in `127.0.0.0/8` or `::1/128`, `localhost`, or a name ending in `.localhost` | [MDN Secure contexts](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts) |
+| Modal 401 and 403 (read 2026-11-16) | Missing credentials: 401 "missing credentials for proxy authorization". With RBAC, "Valid tokens that are not scoped to the relevant Environment will be denied with a 403 code" | [Modal Servers guide](https://modal.com/docs/guide/servers), [Modal Proxy Tokens](https://modal.com/docs/guide/webhook-proxy-auth) |
 
 Because Gemini browser access is not confirmed, the `gemini` provider is designed but **hidden** until llm-adapter task 9 confirms it. If it is not confirmed, it stays out, which matches the PLAN.md cut list.
 
@@ -34,10 +37,11 @@ Because Gemini browser access is not confirmed, the `gemini` provider is designe
 ```
 src/llm/
   types.ts            ProviderId, ProviderConfig, LlmRequest (LlmRequestField, LlmRequestAnswer), LlmSuggestion, LlmNote, LlmProvider, FallbackReason, LlmOutcome
-  prompt.ts           buildRequest(form, answers) -> LlmRequest (pure; labels and answers only)
+  prompt.ts           buildRequest(form, answers) -> LlmRequest (pure; labels and answers only); SYSTEM_PROMPT; REPLY_SCHEMA
   parse.ts            parseSuggestions(text) -> LlmSuggestion[] (pure, never throws); parseReply(text) -> LlmSuggestion[] | null
   merge.ts            mergeSuggestions(form, ruleResult, suggestions, ctx) -> MappingResult (pure); collectNotes(form, suggestions) -> LlmNote[]
-  openai-compatible.ts  one HTTP client for modal and ollama (fetch)
+  openai-compatible.ts  one HTTP client for modal and ollama (fetch): modalProvider, ollamaProvider, chatCompletionsUrl, DEFAULT_OLLAMA_BASE_URL
+  provider-error.ts   ProviderError(reason, status?): the only rejection a client's complete() gives
   gemini.ts           hidden until confirmed
   key-store.ts        memory by default, optional localStorage with forget
   adapter.ts          assist(config, form, answers, ruleResult, signal, ctx) -> Promise<LlmOutcome>; DEFAULT_PROVIDER_CONFIG; assistWithProvider(provider, form, answers, ruleResult, signal, ctx) (internal)
@@ -75,7 +79,7 @@ export interface LlmProvider {
 export type LlmOutcome =
   | { kind: "off"; result: MappingResult }
   | { kind: "ok"; result: MappingResult; accepted: number; rejected: number; notes: LlmNote[] }
-  | { kind: "fallback"; result: MappingResult; reason: "timeout" | "network" | "http" | "warming-up" | "bad-output" | "cancelled" };
+  | { kind: "fallback"; result: MappingResult; reason: "timeout" | "network" | "http" | "warming-up" | "bad-output" | "cancelled"; status?: number };   // status only for "http" (task 6 conventions)
 ```
 
 `LlmRequest` has no image, box, signature or stitch-code field, so Req 3.2 holds by construction; a unit test checks the serialised request contains only these keys.
@@ -111,7 +115,7 @@ sequenceDiagram
 
 ## Prompt and output contract
 
-System message (English, fixed): the model gets the field list and the answers and must reply with JSON only: `{"suggestions":[{"fieldId":"...","value":"..."}],"warnings":[{"fieldId":"...","note":"..."}]}`. It is told that dates must be DD/MM/YYYY, that it must not invent values, and that it must not suggest signatures. Temperature 0, `max_tokens` 512.
+System message (English, fixed; `SYSTEM_PROMPT` in `prompt.ts`): the model gets the field list and the answers and must reply with JSON only: `{"suggestions":[{"fieldId":"...","value":"..."}],"warnings":[{"fieldId":"...","note":"..."}]}`. It is told that dates must be DD/MM/YYYY, that it must not invent values, and that it must not suggest signatures. Temperature 0, `max_tokens` 512.
 
 - Modal (vLLM): also sends `response_format` with `type: "json_schema"` for this shape (documented by vLLM).
 - Ollama: sends the same messages without `response_format`, because the docs list the field but do not show the `json_schema` form; `parseSuggestions` handles plain text.
@@ -132,10 +136,10 @@ System message (English, fixed): the model gets the field list and the answers a
 |---|---|---|
 | Cold start | HTTP 503 | "The model is warming up. Your form still works without it." + Try again |
 | Timeout | `AbortSignal.timeout(20000)` fires; error name `TimeoutError` | "The model took too long. Using the built-in rules." |
-| CORS or network | `fetch` rejects with `TypeError`; script cannot tell a CORS block from a network failure, so the message covers both | Provider-specific hint: Ollama shows the `OLLAMA_ORIGINS` line; Modal says the endpoint does not allow this site |
+| CORS or network | `fetch` rejects with `TypeError`; script cannot tell a CORS block from a network failure, so the message covers both. A redirect is refused the same way (`redirect: "error"`, task 6 conventions) | Provider-specific hint: Ollama shows the `OLLAMA_ORIGINS` line; Modal says the endpoint does not allow this site |
 | 401 / 403 | status | "The endpoint refused the key." |
 | Other HTTP error | status | "The model service returned an error (HTTP n). Using the built-in rules." |
-| Bad output | `parseReply` returns `null`: the reply is not the expected JSON (task 3 and 5 conventions). A valid reply with nothing in it is `ok` with nothing changed. | "The model's reply could not be used. Using the built-in rules." |
+| Bad output | The response is not a chat completion with a string `choices[0].message.content`, or is over 256 KiB (task 6 conventions); or `parseReply` returns `null`: the reply is not the expected JSON (task 3 and 5 conventions). A valid reply with nothing in it is `ok` with nothing changed. | "The model's reply could not be used. Using the built-in rules." |
 | User cancel | user presses Cancel, `AbortController.abort()` | no message |
 
 Error messages never include the key, the answers or the response body.
@@ -216,6 +220,19 @@ Task 5 (P5 and the P1 re-check, `src/llm/merge.property.test.ts`):
 - The P1 re-check also calls `mergeSuggestions` directly, with suggestion lists the parser would never produce (values of any length, notes, value and note together) and a rule-based result with any subset of its entries removed, which exercises rule 5.
 - A sampling check (300 cases, seed 17) keeps the properties from passing vacuously. On this machine it gave 146 `ok` and 154 "bad-output" outcomes, 58 fields filled, 103 suggestions rejected, 108 value suggestions aimed at protected fields, 37 flagged fields filled and 149 notes; the test only requires each count to be above zero.
 - Writing P5 corrected one claim from task 4: the first draft said the merged result lists fields in form order. The property generated field IDs such as `"0"` and `"4"`, which JavaScript lists before other keys, so the doc comment, the rule 5 note above and the tests now promise one entry per field and compare sorted keys.
+
+Task 6 (`openai-compatible.ts`, `provider-error.ts`, `assist`):
+
+- `assist` now builds the client for `modal` or `ollama` (`modalProvider`, `ollamaProvider`) and calls `assistWithProvider`, so P5 covers the path the app runs. A second property in `openai-compatible.test.ts` checks this directly: for any model text, `assist` with a Modal or Ollama configuration and a fake `fetch` returning that text as a chat completion gives exactly the outcome `assistWithProvider` gives with a fake provider returning the same text. `gemini` still rejects with "not available in this build" (task 9).
+- A client's `complete` rejects only with a `ProviderError { reason, status }`, and `assistWithProvider` turns it into `fallback` with that reason. A rejection of any other kind is a bug and is passed on. The user's cancel wins over the error, so it never shows a message.
+- The fallback outcome gained `status?: number`, set only for reason `"http"`, because the error table shows a different message for 401 and 403 than for other statuses, with the number. The Types block above shows it.
+- Status handling: any status outside 200 to 299 is `"http"` with its status, except 503 from Modal, which is `"warming-up"` (Req 6.2 names the Modal endpoint; 503 from Ollama is not a cold start). The body of an error response is not read, since it may echo the request.
+- Every rejection of `fetch` or of reading the body is `"network"` unless the user cancelled (`"cancelled"`) or the 20-second timer fired (`"timeout"`); the client checks the two signals rather than the error's name. A response that is not JSON with a string `choices[0].message.content`, or whose body passes 256 KiB (`MAX_RESPONSE_BYTES`, read as a stream, also refused early when `Content-Length` says so), is `"bad-output"`, like a reply `parseReply` cannot use. A reply of 512 tokens is a few kilobytes; the cap keeps a wrong endpoint from filling memory.
+- Req 3.3 ("only to the URL the user configured"): `chatCompletionsUrl(base)` accepts the server root, a URL ending in `/v1`, or the full `/v1/chat/completions` URL, with or without trailing slashes, and returns `<origin><path>/v1/chat/completions`. It refuses anything but `https`, or `http` to a loopback host (MDN "Secure contexts"), so answers never cross a network in clear text, and refuses a user name, password, query or fragment. Requests use `redirect: "error"`, so a redirect cannot forward the answers elsewhere, plus `credentials: "omit"`, `cache: "no-store"` and `referrerPolicy: "no-referrer"`. `index.ts` exports `chatCompletionsUrl` and `DEFAULT_OLLAMA_BASE_URL` for the settings panel (task 8), which checks the URL before saving and can show the host in the first-use notice (Req 3.1).
+- A configuration the panel should not let through makes `assist` reject with a `RangeError` before anything is sent: an endpoint `chatCompletionsUrl` refuses, a Modal token that is not printable ASCII without spaces after trimming (it goes into a header as it is), or a blank Ollama model. A blank token sends no `Authorization` header. The messages name no endpoint or token.
+- The fixed system message (`SYSTEM_PROMPT`) and the JSON Schema of the reply (`REPLY_SCHEMA`, sent to Modal as `response_format` with `name: "stitchform-suggestions"`) are in `prompt.ts`. The user message is `JSON.stringify(buildRequest(form, answers))`. The schema requires both lists and allows no other keys; it has no length caps, since `parseReply` applies them.
+- The UI messages in the error table are left for the lab-ui tasks (with llm-adapter task 8), as the stitch-code UI messages were; the outcome carries what they need (`reason`, `status`, and the provider from the configuration).
+- `ProviderError` messages hold the reason and the status only. A test feeds responses and a rejection that echo the token and the answers, and checks that no message contains them and that no `console` method is called (Req 4.3).
 
 ## Correctness properties
 

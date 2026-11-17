@@ -1,38 +1,56 @@
 // The one way into LLM help (llm-adapter Req 1.2): the UI calls `assist`, and no other module
 // talks to a provider. Provider "none" is the default (Req 1.1): the rule-based result comes
-// back unchanged and nothing is sent anywhere. For a provider, `assistWithProvider` builds the
-// request (labels and answers only), reads the reply defensively and merges it through the
-// validators; the provider clients that `assist` will hand it come with task 6.
+// back unchanged and nothing is sent anywhere. For Modal or Ollama, `assist` builds the
+// OpenAI-compatible client and hands it to `assistWithProvider`, which builds the request
+// (labels and answers only), reads the reply defensively, merges it through the validators and
+// turns a failed request into a fallback that keeps the rule-based result (Req 6.1, 6.2).
 
 import type { Answer, FieldResult, FormModel, MappingResult } from '../form-model';
 import type { IssueCode, ValidationContext } from '../validation';
 import { collectNotes, mergeSuggestions } from './merge';
+import { modalProvider, ollamaProvider } from './openai-compatible';
 import { parseReply } from './parse';
 import { buildRequest } from './prompt';
+import { ProviderError } from './provider-error';
 import type { LlmOutcome, LlmProvider, ProviderConfig } from './types';
 
 /** LLM help starts off, so answers are mapped by the rule-based mapper only (Req 1.1). */
 export const DEFAULT_PROVIDER_CONFIG: ProviderConfig = Object.freeze({ id: 'none' });
 
+/** The client for a configured provider. Gemini is not offered in this build (task 9). */
+function providerFor(config: Exclude<ProviderConfig, { id: 'none' }>): LlmProvider {
+  switch (config.id) {
+    case 'modal':
+      return modalProvider(config);
+    case 'ollama':
+      return ollamaProvider(config);
+    case 'gemini':
+      throw new Error(`LLM provider "${config.id}" is not available in this build`);
+  }
+}
+
 /**
  * Offer LLM help on top of `ruleResult`, the rule-based mapping of `answers` onto `form`, which
  * the UI has already shown. With provider "none" the outcome is `off` with `ruleResult` itself,
- * whatever the signal says. `signal` is the user's Cancel button (Req 6.3) and `ctx` is the
- * validation context the merge step validates suggestions with (Req 5.1).
+ * whatever the signal says. Otherwise the request goes to the configured Modal or Ollama
+ * endpoint through `assistWithProvider`. `signal` is the user's Cancel button (Req 6.3) and
+ * `ctx` is the validation context the merge step validates suggestions with (Req 5.1).
  *
- * Until the provider clients exist (task 6) any other provider is a programming error, because
- * the settings panel cannot offer one yet.
+ * Rejects with a RangeError, before sending anything, for a configuration the settings panel
+ * should not have let through (an endpoint `chatCompletionsUrl` refuses, a Modal token a header
+ * cannot hold, a blank Ollama model), and with an Error for provider "gemini", which is not
+ * offered. Every failure of the request itself resolves to a `fallback` outcome.
  */
 export async function assist(
   config: ProviderConfig,
-  _form: FormModel,
-  _answers: readonly Answer[],
+  form: FormModel,
+  answers: readonly Answer[],
   ruleResult: MappingResult,
-  _signal: AbortSignal,
-  _ctx: ValidationContext,
+  signal: AbortSignal,
+  ctx: ValidationContext,
 ): Promise<LlmOutcome> {
   if (config.id === 'none') return { kind: 'off', result: ruleResult };
-  throw new Error(`LLM provider "${config.id}" is not available in this build`);
+  return assistWithProvider(providerFor(config), form, answers, ruleResult, signal, ctx);
 }
 
 const issueCount = (r: FieldResult | undefined, code: IssueCode): number => r?.issues.filter((i) => i.code === code).length ?? 0;
@@ -55,13 +73,15 @@ function addedIssues(before: MappingResult, after: MappingResult, code: IssueCod
  * - `fallback` "cancelled" with `ruleResult`, when `signal` is cancelled before the request or
  *   while the reply is on its way (Req 1.4); nothing is merged, and the provider is not called
  *   when the signal was cancelled first.
+ * - `fallback` with the ProviderError's reason (and HTTP status, for "http") and `ruleResult`,
+ *   when the request fails: timeout, network or CORS, HTTP error, Modal warming up, or a
+ *   response that is not a chat completion (Req 6.1, 6.2).
  * - `fallback` "bad-output" with `ruleResult`, when the reply is not the expected JSON.
  * - `ok` otherwise, with the merged result, the number of fields filled (`accepted`) and of
  *   suggestions that failed their validator (`rejected`), and the model's notes.
  *
- * `assist` will call this with the client for the configured provider (task 6), and the
- * property tests call it with a fake provider (P5). A rejection from `provider.complete` is
- * passed on for now; task 6 turns timeouts, network and HTTP errors into fallback reasons.
+ * `assist` calls this with the client for the configured provider, and the property tests call
+ * it with a fake provider (P5). A rejection that is not a ProviderError is a bug and is passed on.
  */
 export async function assistWithProvider(
   provider: LlmProvider,
@@ -72,7 +92,15 @@ export async function assistWithProvider(
   ctx: ValidationContext,
 ): Promise<LlmOutcome> {
   if (signal.aborted) return { kind: 'fallback', result: ruleResult, reason: 'cancelled' };
-  const text = await provider.complete(buildRequest(form, answers), signal);
+  let text: string;
+  try {
+    text = await provider.complete(buildRequest(form, answers), signal);
+  } catch (error) {
+    if (signal.aborted) return { kind: 'fallback', result: ruleResult, reason: 'cancelled' };
+    if (!(error instanceof ProviderError)) throw error;
+    const { reason, status } = error;
+    return status === undefined ? { kind: 'fallback', result: ruleResult, reason } : { kind: 'fallback', result: ruleResult, reason, status };
+  }
   if (signal.aborted) return { kind: 'fallback', result: ruleResult, reason: 'cancelled' };
   const suggestions = parseReply(text);
   if (suggestions === null) return { kind: 'fallback', result: ruleResult, reason: 'bad-output' };

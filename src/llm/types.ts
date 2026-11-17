@@ -73,4 +73,6 @@ export type LlmOutcome =
   | { kind: 'off'; result: MappingResult }
   // `notes` are the model's warnings for fields of the form, kept out of `result` (see LlmNote).
   | { kind: 'ok'; result: MappingResult; accepted: number; rejected: number; notes: LlmNote[] }
-  | { kind: 'fallback'; result: MappingResult; reason: FallbackReason };
+  // `status` is the HTTP status, only for reason "http", so the UI can tell a refused key (401,
+  // 403) from another error (design.md "Error handling and fallback").
+  | { kind: 'fallback'; result: MappingResult; reason: FallbackReason; status?: number };

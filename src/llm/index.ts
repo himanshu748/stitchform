@@ -3,3 +3,4 @@
 
 export type { FallbackReason, LlmNote, LlmOutcome, ProviderConfig, ProviderId } from './types';
 export { DEFAULT_PROVIDER_CONFIG, assist } from './adapter';
+export { DEFAULT_OLLAMA_BASE_URL, chatCompletionsUrl } from './openai-compatible';
