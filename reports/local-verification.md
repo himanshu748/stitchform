@@ -17,9 +17,11 @@ This is a local prototype verification record. No public repository, hosting, mo
 | Keyboard/reduced motion | Targeted checks passed | Tab to sample, arrow move, Escape dialog close, native inputs, reduced-motion CSS. This does not establish a WCAG conformance audit |
 | Modal Python | Syntax passed | `python3 -m py_compile modal/stitchform_llm.py`; no import/run/deploy or GPU execution |
 | Repository guard | Passed before final commits | Manual invocation through Codex; Kiro hook coverage is separately recorded in KIRO_USAGE.md |
-| Clean-copy quickstart | Pending final archive check | Result appended after running |
+| Clean-copy quickstart | Passed | Clean `git archive` of 928fef5, `npm ci`, production build and all six browser cases passed. Later commit 594385f changes documentation and formatting only |
 | Physical camera/microphone, VoiceOver, low-end phone, Firefox | Not tested | Needs actual device/screen-reader/language availability validation |
 | Kiro form-qa / remaining hook and IDE runs | Not complete | Definitions and earlier smoke evidence exist; Kiro reported usage limit. Codex work is identified separately |
 | Hosted app / live model / public CI | Not performed | Requires publication/deployment approval; CI configuration is committed but no remote CI run is claimed |
 
 The saved OCR report is the source of truth: clean admission 8/8, scholarship 7/7, hostel 9/10; synthetic crumpled 7/8, 7/7, 10/10. Generic-form placement is heuristic. The UI requires checking the detected boxes and the final PDF.
+
+Final local checks on 2026-11-17: 583 tests, including property tests, across 39 files (see final command output), six Chromium browser cases, strict TypeScript, Vite production build, sample PDF/template reproducibility and all-files guard. No public CI, deployment, live model or submission was run.
