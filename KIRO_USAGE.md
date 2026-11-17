@@ -1,6 +1,6 @@
 # How Stitchform uses Kiro
 
-This file answers each Kiro write-up question in the [Kiroween 2026 rules](https://kiroween.devpost.com/rules). It records only what has actually happened, and it is updated after each task. Last update: 2026-11-15, end of milestone M2 (specs for all eleven features). App features come next, so several sections below say "not yet".
+This file answers each Kiro write-up question in the [Kiroween 2026 rules](https://kiroween.devpost.com/rules). It records only what has actually happened, and it is updated after each task. Last update: 2026-11-17. The local application is implemented. Earlier Kiro evidence is preserved below; the Codex continuation and unverified Kiro/device/hosted steps are explicitly identified.
 
 ## Kiro surfaces used and how they differed
 
@@ -27,7 +27,7 @@ Differences found so far:
 - Resources: all steering files and PLAN.md, because the [custom agents docs](https://kiro.dev/docs/custom-agents/) say custom agents do not load steering automatically unless listed.
 - Format checked against the [configuration reference](https://kiro.dev/docs/custom-agents/configuration-reference/).
 
-Status: `kiro-cli agent validate --path .kiro/agents/form-qa.json` exits 0 and `kiro-cli agent list` shows `form-qa` as a workspace agent in "v3 format". It has not reviewed anything yet because no feature code exists. Impact: not yet known.
+Status: `kiro-cli agent validate --path .kiro/agents/form-qa.json` exits 0 and `kiro-cli agent list` shows `form-qa` as a workspace agent in "v3 format". Its final code/sample review has not been run. Kiro reported a monthly usage limit before the Codex continuation; do not count generic review or definition validation as an executed custom-agent review. Impact from review is not yet demonstrated.
 
 ## Agent hooks
 
@@ -91,12 +91,12 @@ The properties P1 to P5 from PLAN.md section 7 are tied to requirement IDs in on
 
 How they were written: by the T3 Code agent (Kiro CLI over ACP), as plain files, not through the Kiro spec workflow UI or `kiro-cli chat --mode spec`. The docs pages read do not show the exact `tasks.md` syntax that Kiro's task runner expects, so whether Kiro's task view picks these files up as-is is not known yet (listed in "Steps for you in the Kiro IDE").
 
-What writing the specs first changed, before any code exists:
+What writing the specs first changed:
 
 - Confirming APIs before the design changed several plans. pdf-lib's open Hindi shaping issue ([#1409](https://github.com/Hopding/pdf-lib/issues/1409)) moved Hindi PDF text to a canvas-image path. vLLM's docs warn that `--api-key` leaves `/invocations` unauthenticated, so the Modal design uses Modal proxy auth instead. Modal's billing docs say a payment method must be on file, which answers an open question in PLAN.md. Gemini's browser CORS could not be confirmed, so that provider is hidden behind a gate task.
 - PDF upload was dropped from v1 capture, because OCR on a PDF needs a PDF renderer that no spec has confirmed.
 
-Whether specs saved time or caught bugs during implementation: not known yet. The seam animation will be vibe-coded first (lab-ui task 4) and then corrected against lab-ui Requirement 2 (task 5), and this section will compare the two.
+The requirements made the privacy and validation invariants concrete. The choice-label idempotence issue below is an observed PBT result; no development-time saving is measured. A brief seam visual pass was committed separately as 5200fe7, then corrected for reduced motion and capped field-only feedback. It was a Codex experiment informed by the already-existing specification, so it is not a genuinely spec-free Kiro comparison. The planned strict spec-versus-vibe experiment remains unverified.
 
 ## Steering strategy
 
@@ -107,7 +107,7 @@ Four files in `.kiro/steering/`, with front matter from the [steering docs](http
 - `structure.md` (`inclusion: always`): module layout, spec folder names, test and fixture placement, "never ignore .kiro".
 - `form-privacy-and-i18n.md` (`inclusion: fileMatch` on `src/mapping/**`, `src/validation/**`, `src/voice/**`, `src/stitch-code/**`, `src/llm/**`): handling personal answers, voice and LLM notices, English and Hindi label synonyms, Devanagari digits, Indian date formats, properties P1 and P2.
 
-The idea: rules that apply everywhere stay short and always loaded; the detailed personal-data and language rules load only when Kiro touches code that handles answers. Which file made the biggest difference: not known yet.
+The idea: rules that apply everywhere stay short and always loaded; the detailed personal-data and language rules load only when Kiro touches code that handles answers. The domain file was the most directly applicable constraint during the continuation: keys, images and signatures were kept out of stitch-code payloads, and recognition remained opt-in. This is a qualitative implementation observation, not a measured comparison of steering effectiveness.
 
 ## MCP
 
@@ -221,3 +221,18 @@ Official docs refreshed: Modal's vLLM example and billing/proxy-auth guides, Goo
 Context7 MCP was used directly by Codex to resolve `/hopding/pdf-lib` and `/naptha/tesseract.js/v7.0.0`, then query PDF drawing and self-hosted OCR. It confirmed bottom-left PDF coordinates, font measurement, image embedding, the local worker/core/language paths, and explicit `blocks: true` output for word boxes. This is additional docs evidence, not a Kiro MCP run.
 
 Codex continuation used the connected Context7 MCP: resolved `/hopding/pdf-lib` and `/naptha/tesseract.js/v7.0.0`, then queried drawing/image geometry and self-hosted worker configuration. The latter confirmed that `corePath` is a directory and `blocks: true` must be requested for word boxes. This is additional docs-MCP evidence, not a Kiro MCP run.
+
+
+### Local application evidence from the Codex continuation
+
+The continuation built camera/upload processing, same-origin Tesseract workers, template/generic field detection, three bilingual fictional sample forms, PDF output, opt-in voice, the five-step lab interface and encrypted-code restoration. The runtime LLM path remains optional and untested against a live provider. The Modal file was syntax-checked only. No Kiro CLI retry, deployment, login, publication or billing action was taken.
+
+Browser validation used Playwright after two in-app-browser snapshot calls returned `Preview automation snapshot timed out after 15000ms.` The visual references actually inspected were GOV.UK's Universal Credit entry page (strong hierarchy, explicit next actions, restrained navigation) and the Tesseract demo (document-first upload). Their assets, branding and copy were not reused. The moss/cream palette, paper illustration and seam treatment are original choices. Typography deliberately uses Georgia for warm headings, the platform sans stack for controls and body text, system monospace for lab labels, and bundled Noto Sans Devanagari for Hindi/canvas. Hindi font loading was checked in the browser.
+
+The initial mobile layout placed the full-page preview before all answering/review controls. It was changed to a collapsible preview outside field-checking on narrow screens. A real downloaded Hindi PDF was rendered with Poppler and inspected: the sample watermark and the Hindi name remain visible and the name sits in its intended box. The fontkit-vs-canvas comparative capture and Firefox inspection remain undone; the implementation uses the planned canvas path.
+
+Reports: `reports/ocr-measurements.json` records one run per generated image. Clean label recalls: admission 8/8, scholarship 7/7, hostel 9/10. Synthetic crumpled label recalls: 7/8, 7/7, 10/10, taking 5,023 ms, 876 ms and 2,235 ms respectively. These are text-label recall counts, not field-box accuracy, phone measurements or real crumpled-paper results. The earlier progress message understated the final hostel crumpled result; this saved report is the reference.
+
+`reports/pbkdf2-measurement.json` records Chromium 159.0.8154.6 on Apple M4, macOS arm64: five runs of 600,000 PBKDF2-HMAC-SHA256 iterations to an AES-GCM-256 key, median 70.2 ms. Read the report for the actual browser version and run values; no low-end phone was available. The UI's timer covers encryption and QR generation as well, so it is not the isolated derivation benchmark.
+
+Task ticks record implemented and tested work at the stated boundary. Remaining unchecked tasks include Kiro-specific executions, the strict vibe experiment, actual microphone checks, comparative Hindi rendering/Firefox and post-deployment checks. The final local validation result is recorded in `reports/local-verification.md` after checks finish. Manual VoiceOver and physical camera/microphone behaviour are not claimed.

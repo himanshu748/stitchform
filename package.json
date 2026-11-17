@@ -17,7 +17,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "samples": "node scripts/make-samples.mjs",
-    "guard": "node scripts/hooks/commit-guard.mjs --ci"
+    "guard": "node scripts/hooks/commit-guard.mjs --ci",
+    "assets:ocr": "node scripts/copy-ocr-assets.mjs",
+    "test:ocr": "node scripts/test-ocr.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.65.1",

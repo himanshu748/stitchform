@@ -1,0 +1,103 @@
+{
+  "date": "2026-11-17",
+  "runtime": "v26.12.0",
+  "machine": "macOS arm64 local laptop; synthetic image inputs, not camera footage",
+  "results": [
+    {
+      "file": "sample-lantern-hill-admission.png",
+      "ms": 2070,
+      "labelsFound": 8,
+      "totalLabels": 8,
+      "found": [
+        "full-name",
+        "dob",
+        "guardian",
+        "address",
+        "course",
+        "marks",
+        "photo",
+        "signature"
+      ]
+    },
+    {
+      "file": "sample-lantern-hill-admission-crumpled.png",
+      "ms": 5023,
+      "labelsFound": 7,
+      "totalLabels": 8,
+      "found": [
+        "full-name",
+        "dob",
+        "guardian",
+        "address",
+        "course",
+        "marks",
+        "signature"
+      ]
+    },
+    {
+      "file": "sample-moonfield-scholarship.png",
+      "ms": 1124,
+      "labelsFound": 7,
+      "totalLabels": 7,
+      "found": [
+        "full-name",
+        "dob",
+        "income-band",
+        "course",
+        "statement",
+        "declaration",
+        "signature"
+      ]
+    },
+    {
+      "file": "sample-moonfield-scholarship-crumpled.png",
+      "ms": 876,
+      "labelsFound": 7,
+      "totalLabels": 7,
+      "found": [
+        "full-name",
+        "dob",
+        "income-band",
+        "course",
+        "statement",
+        "declaration",
+        "signature"
+      ]
+    },
+    {
+      "file": "sample-hollowbrook-hostel.png",
+      "ms": 1481,
+      "labelsFound": 9,
+      "totalLabels": 10,
+      "found": [
+        "full-name",
+        "dob",
+        "id-type",
+        "sample-id-number",
+        "address",
+        "emergency-contact-name",
+        "arrival-date",
+        "departure-date",
+        "signature"
+      ]
+    },
+    {
+      "file": "sample-hollowbrook-hostel-crumpled.png",
+      "ms": 2235,
+      "labelsFound": 10,
+      "totalLabels": 10,
+      "found": [
+        "full-name",
+        "dob",
+        "id-type",
+        "sample-id-number",
+        "address",
+        "emergency-contact-name",
+        "emergency-contact-phone",
+        "arrival-date",
+        "departure-date",
+        "signature"
+      ]
+    }
+  ]
+}

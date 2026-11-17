@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-17",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M4",
+  "browser": "159.0.8154.6",
+  "operation": "Web Crypto PBKDF2-HMAC-SHA256 600000 iterations to AES-GCM 256-bit key",
+  "runsMs": [
+    78.9,
+    71.9,
+    70.2,
+    64.9,
+    70
+  ],
+  "medianMs": 70.2,
+  "lowEndPhone": "not tested"
+}
