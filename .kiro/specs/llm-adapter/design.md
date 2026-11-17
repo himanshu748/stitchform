@@ -43,7 +43,7 @@ src/llm/
   openai-compatible.ts  one HTTP client for modal and ollama (fetch): modalProvider, ollamaProvider, chatCompletionsUrl, DEFAULT_OLLAMA_BASE_URL
   provider-error.ts   ProviderError(reason, status?): the only rejection a client's complete() gives
   gemini.ts           hidden until confirmed
-  key-store.ts        memory by default, optional localStorage with forget
+  key-store.ts        memory by default, optional localStorage with forget: getKey, setKey(provider, key, remember), isRemembered, forgetKey
   adapter.ts          assist(config, form, answers, ruleResult, signal, ctx) -> Promise<LlmOutcome>; DEFAULT_PROVIDER_CONFIG; assistWithProvider(provider, form, answers, ruleResult, signal, ctx) (internal)
   index.ts
 modal/stitchform_llm.py
@@ -233,6 +233,14 @@ Task 6 (`openai-compatible.ts`, `provider-error.ts`, `assist`):
 - The fixed system message (`SYSTEM_PROMPT`) and the JSON Schema of the reply (`REPLY_SCHEMA`, sent to Modal as `response_format` with `name: "stitchform-suggestions"`) are in `prompt.ts`. The user message is `JSON.stringify(buildRequest(form, answers))`. The schema requires both lists and allows no other keys; it has no length caps, since `parseReply` applies them.
 - The UI messages in the error table are left for the lab-ui tasks (with llm-adapter task 8), as the stitch-code UI messages were; the outcome carries what they need (`reason`, `status`, and the provider from the configuration).
 - `ProviderError` messages hold the reason and the status only. A test feeds responses and a rejection that echo the token and the answers, and checks that no message contains them and that no `console` method is called (Req 4.3).
+
+Task 7 (`key-store.ts`):
+
+- API: `getKey(provider)` returns the key held in memory, else the one remembered on this device, else `undefined`; `setKey(provider, key, remember)` holds the key and returns whether it is now stored on the device; `isRemembered(provider)` tells the settings panel to show the box ticked, the warning and "forget key"; `forgetKey(provider)` clears memory and removes the stored entry. `index.ts` exports these four and the `KeyProvider` type for the settings panel (task 8), and the export-list test lists them. The UI reads the key with `getKey` and puts it into the `ProviderConfig` it passes to `assist`.
+- `setKey(..., false)` also removes a stored copy, so unticking "remember" takes the key off the device straight away, not only "forget key". A key is trimmed, and a blank key forgets the provider's key, since an empty key field means "no key" (the Modal token is optional).
+- Storage problems never throw and never lose the key for this tab. Outside a browser there is no `localStorage`; reading `window.localStorage` throws a `SecurityError` when the user blocks site data, and `setItem` throws `QuotaExceededError` when storage is full ([MDN Window.localStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage), [MDN Storage.setItem](https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem), read 2026-11-16). In each case the key stays in memory, `setKey` returns `false` so the panel can say the key will be gone when the tab closes, and any older stored copy is removed so a stale key cannot come back after a reload.
+- The type allows any provider except `none`, so the storage key follows the design pattern `stitchform.llm.<provider>.key` for whichever provider takes a key; today that is Modal's Proxy Token.
+- Tests run in Node, which has no `localStorage`, so each test installs a fake `Storage` with `vi.stubGlobal` (or none, a getter that throws `SecurityError`, or one that is full). "Gone when the tab closes" is checked by loading a fresh copy of the module with `vi.resetModules()`. A source scan checks that no file under `src/stitch-code/` (and `src/pdf/` once it exists) imports anything from the llm module, and that no file outside `src/llm/` imports `key-store` directly.
 
 ## Correctness properties
 

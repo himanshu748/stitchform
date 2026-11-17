@@ -21,7 +21,7 @@ Each task is one commit. No task deploys, serves or runs the Modal app.
 - [x] 6. Implement the OpenAI-compatible client for Modal and Ollama with timeout, cancel and status handling, tested with a fake `fetch`
   - _Requirements: 2.1, 2.2, 3.3, 6.1, 6.2, 6.3_
 
-- [ ] 7. Implement `key-store.ts` (memory default, optional remember, forget) with unit tests
+- [x] 7. Implement `key-store.ts` (memory default, optional remember, forget) with unit tests
   - _Requirements: 4.1, 4.2, 4.3_
 
 - [ ] 8. LLM settings panel and first-use notice (in lab-ui): off by default, Modal preselected when turned on

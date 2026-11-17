@@ -139,7 +139,7 @@ M2 lookups (spec phase), again through Context7's public REST API from the T3 Co
 | Playwright (`/microsoft/playwright/v1.64.1`) | `page.screenshot` from a Node script | sample-forms design: sample PNGs are rendered by headless Chromium through Playwright (already a dev dependency) instead of adding a Node canvas library. |
 | Library search (`/api/v2/libs/search`) for `tesseract.js`, `qrcode`, `vllm` | Which IDs exist | Found the IDs above; for vLLM the CLI flags were read on [docs.vllm.ai](https://docs.vllm.ai/en/latest/cli/serve.html) directly. |
 
-Official sites were read directly for the rest (cited in each design.md): MDN (Web Speech, Web Crypto, CompressionStream, getUserMedia, fetch, AbortSignal, RequestInit, Secure contexts, FontFace, canvas) and MDN browser-compat-data, Modal docs and pricing, vLLM docs, Ollama docs, Google's Gemini API docs, Chrome's Local Network Access post, npm metadata, Hugging Face model API, EFF and W3C WCAG 2.2.
+Official sites were read directly for the rest (cited in each design.md): MDN (Web Speech, Web Crypto, CompressionStream, getUserMedia, fetch, AbortSignal, RequestInit, Secure contexts, Web Storage, FontFace, canvas) and MDN browser-compat-data, Modal docs and pricing, vLLM docs, Ollama docs, Google's Gemini API docs, Chrome's Local Network Access post, npm metadata, Hugging Face model API, EFF and W3C WCAG 2.2.
 
 ## Property-based testing
 

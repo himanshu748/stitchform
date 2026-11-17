@@ -115,8 +115,17 @@ describe('provider none (Req 1.1, 1.4)', () => {
 });
 
 describe('one adapter (Req 1.2)', () => {
-  it('exposes only assist, the default provider, the Ollama default and the endpoint check', () => {
-    expect(Object.keys(publicApi).sort()).toEqual(['DEFAULT_OLLAMA_BASE_URL', 'DEFAULT_PROVIDER_CONFIG', 'assist', 'chatCompletionsUrl']);
+  it('exposes only assist, the default provider, the Ollama default, the endpoint check and the key store', () => {
+    expect(Object.keys(publicApi).sort()).toEqual([
+      'DEFAULT_OLLAMA_BASE_URL',
+      'DEFAULT_PROVIDER_CONFIG',
+      'assist',
+      'chatCompletionsUrl',
+      'forgetKey',
+      'getKey',
+      'isRemembered',
+      'setKey',
+    ]);
   });
 
   it('refuses Gemini, which is not offered, and a configuration the settings panel should have caught, without sending anything or naming a key', async () => {
