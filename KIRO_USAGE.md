@@ -27,7 +27,7 @@ Differences found so far:
 - Resources: all steering files and PLAN.md, because the [custom agents docs](https://kiro.dev/docs/custom-agents/) say custom agents do not load steering automatically unless listed.
 - Format checked against the [configuration reference](https://kiro.dev/docs/custom-agents/configuration-reference/).
 
-Status: `kiro-cli agent validate --path .kiro/agents/form-qa.json` exits 0 and `kiro-cli agent list` shows `form-qa` as a workspace agent in "v3 format". Its final code/sample review has not been run. Kiro reported a monthly usage limit before the Codex continuation; do not count generic review or definition validation as an executed custom-agent review. Impact from review is not yet demonstrated.
+Status: `kiro-cli agent validate --path .kiro/agents/form-qa.json` exits 0 and `kiro-cli agent list` shows `form-qa` as a workspace agent in "v3 format". Its final code/sample review has not completed. A read-only attempt with Kiro CLI 3.4.0 on 2026-11-17 failed at the monthly request limit before review. Do not count Codex review or definition validation as an executed Kiro custom-agent review. Impact from a Kiro review is not yet demonstrated.
 
 ## Agent hooks
 
@@ -220,12 +220,9 @@ Official docs refreshed: Modal's vLLM example and billing/proxy-auth guides, Goo
 
 Context7 MCP was used directly by Codex to resolve `/hopding/pdf-lib` and `/naptha/tesseract.js/v7.0.0`, then query PDF drawing and self-hosted OCR. It confirmed bottom-left PDF coordinates, font measurement, image embedding, the local worker/core/language paths, and explicit `blocks: true` output for word boxes. This is additional docs evidence, not a Kiro MCP run.
 
-Codex continuation used the connected Context7 MCP: resolved `/hopding/pdf-lib` and `/naptha/tesseract.js/v7.0.0`, then queried drawing/image geometry and self-hosted worker configuration. The latter confirmed that `corePath` is a directory and `blocks: true` must be requested for word boxes. This is additional docs-MCP evidence, not a Kiro MCP run.
-
-
 ### Local application evidence from the Codex continuation
 
-The continuation built camera/upload processing, same-origin Tesseract workers, template/generic field detection, three bilingual fictional sample forms, PDF output, opt-in voice, the five-step lab interface and encrypted-code restoration. The runtime LLM path remains optional and untested against a live provider. The Modal file was syntax-checked only. No Kiro CLI retry, deployment, login, publication or billing action was taken.
+The continuation built camera/upload processing, same-origin Tesseract workers, template/generic field detection, three bilingual fictional sample forms, PDF output, opt-in voice, the five-step lab interface and encrypted-code restoration. The runtime LLM path remains optional and untested against a live provider. The Modal file was syntax-checked only. No deployment, login, publication or billing action was taken.
 
 Browser validation used Playwright after two in-app-browser snapshot calls returned `Preview automation snapshot timed out after 15000ms.` The visual references actually inspected were GOV.UK's Universal Credit entry page (strong hierarchy, explicit next actions, restrained navigation) and the Tesseract demo (document-first upload). Their assets, branding and copy were not reused. The moss/cream palette, paper illustration and seam treatment are original choices. Typography deliberately uses Georgia for warm headings, the platform sans stack for controls and body text, system monospace for lab labels, and bundled Noto Sans Devanagari for Hindi/canvas. Hindi font loading was checked in the browser.
 
@@ -238,3 +235,17 @@ Reports: `reports/ocr-measurements.json` records one run per generated image. Cl
 Task ticks record implemented and tested work at the stated boundary. Remaining unchecked tasks include Kiro-specific executions, the strict vibe experiment, actual microphone checks, comparative Hindi rendering/Firefox and post-deployment checks. The final local validation result is recorded in `reports/local-verification.md` after checks finish. Manual VoiceOver and physical camera/microphone behaviour are not claimed.
 
 Guard execution boundary in the continuation: Codex shell commits do not auto-fire the Kiro PreToolUse hook. The guard was invoked manually. An early sample metadata check failed because PDF title bytes were encoded; the generator gained an explicit SAMPLE comment and was regenerated before committing the samples. An asset commit command still ran after that failed manual check because its shell used command separators. Later commits used conditional chaining so a failed check stops the commit. The final all-files guard passed; this is not a claim that Kiro guarded every Codex commit.
+
+### Restart recovery and lifecycle checks, 2026-11-17
+
+After the T3 server restart cancelled the local Vite process, Codex restarted it at `http://127.0.0.1:5173/`. The requested read-only custom-agent review was attempted once from this repository with installed Kiro CLI 3.4.0:
+
+```sh
+kiro-cli chat --no-interactive --v3 --trust-workspace --agent form-qa --trust-tools=read,fs_read,grep,glob 'Read-only review: inspect src/ui/app.ts and src/voice/index.ts for lost answers, cancellation races, missing consent, stale QR/PDF results, keyboard/focus issues. Read relevant specs. Do not edit or run shell commands.'
+```
+
+The CLI returned HTTP 400 `ServiceQuotaExceededException`, reason `MONTHLY_REQUEST_COUNT`, request ID `bd8389a1-2f69-4dd6-8eef-8a9977333b01`. No review result was produced. The SessionStart hook did fire: the line at `2026-11-17T08:28:31.876Z` in `reports/raw/hook-smoke.log` is actual hook execution, separately from the failed review. No upgrade, overage, credit request or further retry followed. Test-on-save and doc-sync trigger evidence remain incomplete.
+
+Codex added browser regressions for three reproduced failures: advancing to the next answer left voice running; editing the passphrase during derivation could show a QR encrypted with the previous passphrase; and template-loading failure during OCR preparation discarded the uploaded page. All three failed before the fixes and passed afterwards. A fourth regression reproduced stale QR/PDF links after a pending signature finished on another step; recalculation now removes those links without rebuilding the current answer view. The fixes stop voice when its answer view changes, bind asynchronous work to the current view/form/input revision, invalidate displayed codes when the passphrase changes, and keep the uploaded image in manual correction. Related cases cover pending signature conversion after Clear, wrong-passphrase rejection, closing an unlock before decryption finishes, and leaving Print before a PDF background finishes loading.
+
+Voice errors now have actionable English/Hindi messages for the values listed in [MDN's SpeechRecognitionErrorEvent.error reference](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognitionErrorEvent/error), checked on 2026-11-17; unknown values use the typed-input fallback. Voice browser coverage uses a fake recogniser and does not establish microphone or language-pack operation. The delayed crypto tests use native Web Crypto with test-controlled completion. The keyboard-only sample path uses Tab, Enter, arrows and typing through PDF download; it deliberately leaves the signature missing and verifies that the app flags it. Final results: 594 unit/property tests across 40 files, 15 Chromium cases, strict TypeScript and the production build passed. See `reports/local-verification.md` for remaining limits.

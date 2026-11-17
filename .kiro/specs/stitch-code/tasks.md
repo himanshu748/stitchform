@@ -37,3 +37,5 @@ Each task is one commit. New npm dependencies go into README "Pre-existing work"
   - _Requirements: 2.5_
 
 2026-11-17: QR image upload/refill is exercised in Playwright. Camera-frame decode and .stitch opening are implemented; physical camera scanning remains untested. PBKDF2 benchmark: five laptop runs recorded; low-end phone not available. A custom layout must be reopened before its text-only code can be applied.
+
+2026-11-17 follow-up: Chromium tests download and reopen a `.stitch` file, reject a wrong passphrase, cancel unlocking before delayed native decryption finishes, and invalidate both pending encryption and displayed QR output when its passphrase changes.

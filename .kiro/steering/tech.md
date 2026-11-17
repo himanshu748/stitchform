@@ -23,7 +23,7 @@ inclusion: always
 ## Hard rules
 
 1. **Confirm every API in docs before writing code.** Use the Context7 MCP server (`resolve-library-id`, then `query-docs`) or the library's official docs site. Never guess a signature, option name or config key. Record notable lookups in KIRO_USAGE.md (library, question, what it changed).
-2. **Free tiers only.** Any runtime LLM is a free tier or local: `none` (default), Modal (user-deployed on the Starter plan free credits), Ollama (local), Gemini free tier (optional).
+2. **Free tiers only.** Any runtime LLM is a free tier or local: `none` (default), Modal (user-deployed on the Starter plan free credits), Ollama (local), Gemini is hidden because the browser/free-tier gate was not confirmed.
 3. **One LLM adapter.** All LLM calls go through `src/llm/`. Nothing else may call a provider. The rule-based mapper is the default and the fallback whenever the LLM is off, slow, or returns something that fails validation. LLM output is a suggestion and must pass the same validators as typed input.
 4. **No secrets in the repo or logs.** API keys come from the user at runtime and are held in memory by default. Config files reference environment variables such as `${CONTEXT7_API_KEY}`, never literal keys.
 5. **Never publish.** Do not run `git push`, `gh repo create`, `vercel`, `netlify deploy`, `modal deploy`, `modal serve` or `modal run`. The commit-guard hook blocks these unless the user sets `STITCHFORM_GO=1` themselves.

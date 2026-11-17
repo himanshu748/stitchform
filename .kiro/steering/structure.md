@@ -20,7 +20,7 @@ src/
   validation/      date normalisation, required and signature checks (pure)
   pdf/             pdf-lib regeneration, font embedding
   stitch-code/     serialise, compress, encrypt, QR encode and decode (pure core)
-  llm/             the single LLM adapter: none, Modal, Ollama, Gemini (pure core)
+  llm/             the single LLM adapter: none, Modal, Ollama (Gemini hidden; pure core)
   ui/              lab-stitching theme, privacy panel, strings per language
   main.ts          entry point
 public/
@@ -29,7 +29,7 @@ public/
   fonts/           self-hosted OFL fonts
 scripts/
   hooks/           hook scripts (*.mjs) and their tests (*.test.mjs)
-  make-samples.mjs sample form generator (planned)
+  make-samples.mjs sample form generator
 modal/             optional Modal app serving an open-weights model (never deployed by the agent)
 e2e/               Playwright smoke test
 reports/raw/       raw logs written by hooks (hook-smoke.log)

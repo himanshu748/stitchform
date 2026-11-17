@@ -33,6 +33,7 @@ import { initialState, nextField, type Step } from "./state";
 import { el, button, download } from "./dom";
 import { en, type StringKey } from "./strings.en";
 import { hi } from "./strings.hi";
+import { voiceMessageKey } from "./voice-messages";
 import "./theme.css";
 import "./seams.css";
 
@@ -57,6 +58,10 @@ let pdfUrl: string | undefined,
 let pendingOpen: Uint8Array | undefined,
   notice = "",
   processing = false;
+let viewVersion = 0,
+  encryptionJob = 0,
+  pdfJob = 0;
+const signatureJobs = new WeakMap<FormField, number>();
 const root = document.querySelector<HTMLDivElement>("#app")!;
 const text = (key: StringKey) => (s.lang === "hi" ? hi[key] : en[key]);
 const context = () => {
@@ -71,8 +76,12 @@ const label = (f: FormField) =>
     ? (templates.find((t) => t.id === s.form?.id)?.labelsHi[f.id] ?? f.label)
     : f.label;
 function recalculate() {
+  const hadExport = !!encrypted || !!pdfUrl;
   encrypted = undefined;
   qrUrl = undefined;
+  document
+    .querySelectorAll(".generated-export")
+    .forEach((n) => n.replaceChildren());
   if (pdfUrl) {
     URL.revokeObjectURL(pdfUrl);
     pdfUrl = undefined;
@@ -85,9 +94,8 @@ function recalculate() {
       context(),
     );
   revision++;
-  encrypted = undefined;
-  qrUrl = undefined;
   s.saved = false;
+  if (hadExport && s.step === "save") say(text("exportChanged"));
 }
 function say(message: string) {
   notice = message;
@@ -105,7 +113,7 @@ function say(message: string) {
   }
 }
 function current() {
-  return s.form!.fields[s.current];
+  return s.form?.fields[s.current];
 }
 function statusLabel(status: string) {
   return text(
@@ -113,10 +121,13 @@ function statusLabel(status: string) {
   );
 }
 function stopVoice() {
-  voiceController?.abort();
-  document.querySelector("#voice-status")?.remove();
-  voice?.stop();
+  const controller = voiceController,
+    session = voice;
+  voiceController = undefined;
   voice = undefined;
+  document.querySelector("#voice-status")?.remove();
+  if (controller) controller.abort();
+  else session?.stop();
 }
 function go(step: Step) {
   stopVoice();
@@ -302,6 +313,8 @@ function privacy() {
   });
 }
 function render() {
+  stopVoice();
+  viewVersion++;
   document.documentElement.lang = s.lang;
   document.documentElement.classList.toggle("large-text", s.large);
   root.replaceChildren(header());
@@ -891,6 +904,14 @@ function answerView(panel: HTMLElement) {
   panel.append(free);
 }
 function signaturePanel(panel: HTMLElement, f: FormField) {
+  const form = s.form;
+  const begin = () => {
+    const job = (signatureJobs.get(f) ?? 0) + 1;
+    signatureJobs.set(f, job);
+    return job;
+  };
+  const active = (job: number) =>
+    s.form === form && form?.fields.includes(f) && signatureJobs.get(f) === job;
   const canvas = el("canvas");
   canvas.width = 900;
   canvas.height = 240;
@@ -925,15 +946,18 @@ function signaturePanel(panel: HTMLElement, f: FormField) {
   };
   canvas.onpointerup = () => {
     drawing = false;
-    if (moved)
+    if (moved) {
+      const job = begin();
       canvas.toBlob((b) => {
         if (b)
           void b.arrayBuffer().then((bytes) => {
+            if (!active(job)) return;
             signatures.set(f.id, new Uint8Array(bytes));
             recalculate();
-            say(text("filled"));
+            if (canvas.isConnected) say(text("filled"));
           });
       }, "image/png");
+    }
   };
   const file = el("input");
   file.type = "file";
@@ -942,6 +966,7 @@ function signaturePanel(panel: HTMLElement, f: FormField) {
   file.setAttribute("aria-label", text("signatureUpload"));
   file.onchange = () => {
     const image = file.files?.[0];
+    const job = begin();
     if (image)
       void readImageFile(image)
         .then(
@@ -952,11 +977,14 @@ function signaturePanel(panel: HTMLElement, f: FormField) {
         )
         .then((b) => b.arrayBuffer())
         .then((b) => {
+          if (!active(job)) return;
           signatures.set(f.id, new Uint8Array(b));
           recalculate();
-          render();
+          if (file.isConnected) render();
         })
-        .catch(() => say(text("voiceError")));
+        .catch(() => {
+          if (active(job)) say(text("signatureError"));
+        });
   };
   if (signatures.has(f.id)) {
     const img = new Image();
@@ -978,6 +1006,7 @@ function signaturePanel(panel: HTMLElement, f: FormField) {
     button(
       text("clear"),
       () => {
+        begin();
         signatures.delete(f.id);
         recalculate();
         render();
@@ -987,41 +1016,55 @@ function signaturePanel(panel: HTMLElement, f: FormField) {
   );
 }
 function enableVoice(input: HTMLInputElement) {
+  const form = s.form,
+    field = current();
+  if (!form || !field) return;
   const start = () => {
-    let failed = false;
-    voiceController?.abort();
+    stopVoice();
     const controller = new AbortController();
     voiceController = controller;
+    const active = () =>
+      voiceController === controller &&
+      !controller.signal.aborted &&
+      input.isConnected &&
+      s.form === form &&
+      current() === field;
+    const finish = () => {
+      voice = undefined;
+      voiceController = undefined;
+      document.querySelector("#voice-status")?.remove();
+      const toggle = document.querySelector<HTMLButtonElement>("#voice-toggle");
+      if (toggle) toggle.textContent = text("speak");
+    };
     void startVoice(
       {
         lang: s.lang,
         confirmed: consent,
         signal: controller.signal,
-        offerInstall: async () => confirm(text("install")),
+        offerInstall: async () => active() && confirm(text("install")),
         onText: (value) => {
+          if (!active()) return;
           input.value = value;
-          if (current()) voiceAnswer = { fieldId: current()!.id, text: value };
+          voiceAnswer = { fieldId: field.id, text: value };
         },
-        onError: () => {
-          failed = true;
-          voice = undefined;
-          document.querySelector("#voice-status")?.remove();
-          say(text("voiceError"));
+        onError: (code) => {
+          if (!active()) return;
+          finish();
+          controller.abort();
+          say(text(voiceMessageKey(code)));
           input.focus();
         },
         onEnd: () => {
-          voice = undefined;
-          document.querySelector("#voice-status")?.remove();
-          const toggle =
-            document.querySelector<HTMLButtonElement>("#voice-toggle");
-          if (toggle) toggle.textContent = text("speak");
-          if (!failed) say("");
+          if (active()) {
+            finish();
+            say("");
+          }
         },
       },
       recognitionSupport(),
     )
       .then((session) => {
-        if (controller.signal.aborted || !input.isConnected) {
+        if (!active()) {
           session.stop();
           return;
         }
@@ -1029,20 +1072,20 @@ function enableVoice(input: HTMLInputElement) {
         const toggle =
           document.querySelector<HTMLButtonElement>("#voice-toggle");
         if (toggle) toggle.textContent = text("stop");
-        const badge = el(
-          "p",
-          text(session.mode === "cloud" ? "cloudBadge" : "localBadge"),
-          "badge",
+        const message = text(
+          session.mode === "cloud" ? "cloudBadge" : "localBadge",
         );
+        const badge = el("p", message, "badge");
         badge.id = "voice-status";
         document.querySelector("main")?.before(badge);
-        say(
-          text("listening") +
-            " · " +
-            text(session.mode === "cloud" ? "cloudBadge" : "localBadge"),
-        );
+        say(text("listening") + " · " + message);
       })
-      .catch(() => say(text("voiceError")));
+      .catch(() => {
+        if (active()) {
+          finish();
+          say(text("voiceError"));
+        }
+      });
   };
   if (consent) {
     start();
@@ -1277,37 +1320,61 @@ function saveView(panel: HTMLElement) {
     ),
     flagged = checkbox(text("printFlagged"));
   panel.append(background.wrap, flagged.wrap);
-  const output = el("div");
+  const output = el("div", "", "generated-export");
   panel.append(
     button(
       text("download"),
       () => {
+        const job = ++pdfJob,
+          rev = revision,
+          view = viewVersion;
+        const backgroundMode = background.input.value,
+          printFlagged = flagged.input.checked;
+        const form = structuredClone(s.form!),
+          resultSnapshot = structuredClone(s.result!);
+        const signatureSnapshot = new Map(
+          [...signatures].map(([id, bytes]) => [id, Uint8Array.from(bytes)]),
+        );
+        const photo = backgroundBytes;
+        const active = () =>
+          job === pdfJob &&
+          rev === revision &&
+          view === viewVersion &&
+          output.isConnected &&
+          backgroundMode === background.input.value &&
+          printFlagged === flagged.input.checked;
         void (async () => {
           const { buildPdf } = await import("../pdf/build"),
             { renderTextImage } = await import("../pdf/text-image");
           let bg: import("../pdf/build").Background = { kind: "clean" };
-          if (background.input.value === "over") {
-            if (s.form!.source === "sample" && !backgroundBytes) {
-              const response = await fetch(`/samples/${s.form!.id}.pdf`);
+          if (backgroundMode === "over") {
+            if (form.source === "sample" && !photo) {
+              const response = await fetch(`/samples/${form.id}.pdf`);
               if (!response.ok) throw Error();
               bg = {
                 kind: "sample-pdf",
                 bytes: new Uint8Array(await response.arrayBuffer()),
               };
-            } else if (backgroundBytes)
-              bg = { kind: "photo", bytes: backgroundBytes, mime: "image/png" };
+            } else if (photo)
+              bg = { kind: "photo", bytes: photo, mime: "image/png" };
           }
+          if (!active()) return;
           const result = await buildPdf(
             {
-              form: s.form!,
-              result: s.result!,
-              signatures,
+              form,
+              result: resultSnapshot,
+              signatures: signatureSnapshot,
               background: bg,
-              isSample: s.form!.source === "sample",
-              printFlagged: flagged.input.checked,
+              isSample: form.source === "sample",
+              printFlagged,
             },
             renderTextImage,
           );
+          if (!active()) {
+            if (view === viewVersion && job === pdfJob)
+              say(text("exportChanged"));
+            return;
+          }
           output.replaceChildren();
           for (const warning of result.warnings)
             output.append(
@@ -1323,7 +1390,7 @@ function saveView(panel: HTMLElement) {
               result.warnings
                 .map(
                   (w) =>
-                    `${label(s.form!.fields.find((f) => f.id === w.fieldId)!)}: ${text("warning")}`,
+                    `${label(form.fields.find((f) => f.id === w.fieldId)!)}: ${text("warning")}`,
                 )
                 .join("\n"),
             )
@@ -1341,7 +1408,9 @@ function saveView(panel: HTMLElement) {
           output.append(link);
           s.saved = true;
           say(text("pdfReady"));
-        })().catch(() => say(text("warning")));
+        })().catch(() => {
+          if (active()) say(text("warning"));
+        });
       },
       "primary",
     ),
@@ -1352,9 +1421,20 @@ function saveView(panel: HTMLElement) {
     el("h2", text("stitchTitle")),
     el("p", text("stitchHint"), "small"),
   );
+  const codeOutput = el("div", "", "generated-export");
+  let pendingCode = false;
+  const invalidateCode = () => {
+    encrypted = undefined;
+    qrUrl = undefined;
+    codeOutput.replaceChildren();
+  };
   const pass = fieldInput(text("passphrase"), passphrase);
   pass.input.autocomplete = "new-password";
   pass.input.oninput = () => {
+    encryptionJob++;
+    invalidateCode();
+    if (pendingCode) say(text("exportChanged"));
+    pendingCode = false;
     passphrase = pass.input.value;
   };
   stitch.append(
@@ -1362,52 +1442,94 @@ function saveView(panel: HTMLElement) {
     button(
       text("generate"),
       () => {
+        const job = ++encryptionJob,
+          view = viewVersion,
+          value = pass.input.value;
+        invalidateCode();
+        pendingCode = false;
         void fetch("/wordlists/eff_large_wordlist.txt")
           .then((r) => r.text())
           .then((raw) => {
+            if (
+              job !== encryptionJob ||
+              view !== viewVersion ||
+              !pass.input.isConnected ||
+              value !== pass.input.value
+            )
+              return;
             passphrase = generatePassphrase(parseWordList(raw));
             pass.input.value = passphrase;
           })
-          .catch(() => say(text("badCode")));
+          .catch(() => {
+            if (job === encryptionJob && view === viewVersion)
+              say(text("badCode"));
+          });
       },
       "secondary",
     ),
     button(
       text("encrypt"),
       () => {
+        const job = ++encryptionJob,
+          rev = revision,
+          view = viewVersion;
+        const phrase = pass.input.value,
+          resultSnapshot = structuredClone(s.result!);
+        invalidateCode();
+        pendingCode = true;
+        const active = () =>
+          job === encryptionJob &&
+          rev === revision &&
+          view === viewVersion &&
+          pass.input.isConnected &&
+          phrase === pass.input.value;
         void (async () => {
           const raw = await fetch("/wordlists/common-passwords.txt").then((r) =>
               r.text(),
             ),
-            check = checkCustomPassphrase(
-              pass.input.value,
-              parseCommonPasswords(raw),
-            );
+            check = checkCustomPassphrase(phrase, parseCommonPasswords(raw));
+          if (!active()) return;
           if (!check.ok) {
             say(passphraseMessage(check.code, s.lang));
             return;
           }
           say(text("deriving"));
           const start = performance.now(),
-            result = await createStitchCode(s.result!, pass.input.value);
+            result = await createStitchCode(resultSnapshot, phrase);
+          if (!active()) {
+            if (view === viewVersion && job === encryptionJob)
+              say(text("exportChanged"));
+            return;
+          }
           if (!result.ok) {
             say(text("tooLarge"));
             return;
           }
+          const qr = await toQrDataUrl(result.bytes);
+          if (!active()) {
+            if (view === viewVersion && job === encryptionJob)
+              say(text("exportChanged"));
+            return;
+          }
           encrypted = result.bytes;
-          const qr = await toQrDataUrl(encrypted);
           qrUrl = qr.ok ? qr.dataUrl : undefined;
           s.saved = true;
-          passphrase = pass.input.value;
+          passphrase = phrase;
           render();
           say(`PBKDF2 + AES-GCM: ${Math.round(performance.now() - start)} ms`);
-        })().catch(() => say(text("badCode")));
+        })()
+          .catch(() => {
+            if (active()) say(text("badCode"));
+          })
+          .finally(() => {
+            if (job === encryptionJob) pendingCode = false;
+          });
       },
       "primary",
     ),
   );
   if (encrypted) {
-    stitch.append(
+    codeOutput.append(
       button(
         text("fileDownload"),
         () =>
@@ -1423,14 +1545,22 @@ function saveView(panel: HTMLElement) {
       const link = el("a", text("qrDownload"));
       link.href = qrUrl;
       link.download = "stitchform-code.png";
-      stitch.append(img, link);
-    } else stitch.append(el("p", text("tooLarge")));
+      codeOutput.append(img, link);
+    } else codeOutput.append(el("p", text("tooLarge")));
   }
+  stitch.append(codeOutput);
   panel.append(stitch, button(text("open"), openDialog, "text-button"));
 }
 function openDialog() {
   pendingOpen = undefined;
   modal(text("openTitle"), (d, body) => {
+    let readVersion = 0,
+      unlockVersion = 0;
+    d.addEventListener("close", () => {
+      readVersion++;
+      unlockVersion++;
+      pendingOpen = undefined;
+    });
     const file = el("input");
     file.type = "file";
     file.accept = ".stitch,image/png,image/jpeg,image/webp";
@@ -1438,6 +1568,9 @@ function openDialog() {
     const pass = fieldInput(text("passphrase"), "", "password");
     body.append(file, pass.wrap);
     file.onchange = () => {
+      const read = ++readVersion;
+      unlockVersion++;
+      const active = () => d.open && read === readVersion;
       pendingOpen = undefined;
       const f = file.files?.[0];
       if (!f) return;
@@ -1445,7 +1578,8 @@ function openDialog() {
         if (f.size > 20 * 1024 * 1024) throw Error();
         if (f.name.endsWith(".stitch")) {
           if (f.size > 70_000) throw Error();
-          pendingOpen = new Uint8Array(await f.arrayBuffer());
+          const bytes = new Uint8Array(await f.arrayBuffer());
+          if (active()) pendingOpen = bytes;
         } else {
           const bitmap = await createImageBitmap(f);
           try {
@@ -1454,15 +1588,29 @@ function openDialog() {
             canvas.width = bitmap.width;
             canvas.height = bitmap.height;
             canvas.getContext("2d")!.drawImage(bitmap, 0, 0);
-            pendingOpen = decodeQr(canvas);
+            const bytes = decodeQr(canvas);
+            if (active()) pendingOpen = bytes;
           } finally {
             bitmap.close();
           }
         }
-      })().catch(() => say(text("noQr")));
+      })().catch(() => {
+        if (active()) say(text("noQr"));
+      });
     };
     body.append(
-      button(text("scan"), () => cameraDialog(true), "secondary"),
+      button(
+        text("scan"),
+        () =>
+          cameraDialog(true, (bytes) => {
+            if (d.open) {
+              readVersion++;
+              unlockVersion++;
+              pendingOpen = bytes;
+            }
+          }),
+        "secondary",
+      ),
       button(
         text("unlock"),
         () => {
@@ -1470,13 +1618,20 @@ function openDialog() {
             say(text("noQr"));
             return;
           }
+          const job = ++unlockVersion,
+            read = readVersion,
+            bytes = pendingOpen;
+          const active = () =>
+            d.open && job === unlockVersion && read === readVersion;
           void (async () => {
-            const opened = await openStitchCode(pendingOpen!, pass.input.value);
+            const opened = await openStitchCode(bytes, pass.input.value);
+            if (!active()) return;
             if (!opened.ok) {
               say(text("badCode"));
               return;
             }
             await loadTemplates();
+            if (!active()) return;
             const template = templates.find((t) => t.id === opened.formId);
             if (template && (!s.form || s.form.id !== opened.formId))
               await chooseSample(template);
@@ -1495,7 +1650,9 @@ function openDialog() {
             s.saved = true;
             d.close();
             go("review");
-          })().catch(() => say(text("badCode")));
+          })().catch(() => {
+            if (active()) say(text("badCode"));
+          });
         },
         "primary",
       ),
@@ -1510,7 +1667,7 @@ function decodeQr(canvas: HTMLCanvasElement) {
   if (!code) throw Error();
   return Uint8Array.from(code.binaryData);
 }
-function cameraDialog(scan: boolean) {
+function cameraDialog(scan: boolean, onScan?: (bytes: Uint8Array) => void) {
   const d = modal(text(scan ? "scan" : "cameraTitle"), (dialog, body) => {
     const video = el("video");
     video.autoplay = true;
@@ -1543,7 +1700,8 @@ function cameraDialog(scan: boolean) {
           const canvas = capturePhoto(video);
           if (scan) {
             try {
-              pendingOpen = decodeQr(canvas);
+              const bytes = decodeQr(canvas);
+              onScan?.(bytes);
               dialog.close();
               say(text("filled"));
             } catch {
@@ -1573,6 +1731,8 @@ async function processCanvas(canvas: HTMLCanvasElement) {
   processing = true;
   const controller = new AbortController();
   ocrController = controller;
+  const capturedImage = canvas.toDataURL("image/png");
+  let capturedBytes: Uint8Array | undefined;
   const d = modal(text("readTitle"), (dialog, body) => {
     body.append(el("p", text("reading")));
     const progress = el("progress");
@@ -1591,6 +1751,18 @@ async function processCanvas(canvas: HTMLCanvasElement) {
     dialog.addEventListener("close", () => controller.abort());
   });
   try {
+    capturedBytes = new Uint8Array(
+      await new Promise<ArrayBuffer>((resolve, reject) =>
+        canvas.toBlob(
+          (b) =>
+            b
+              ? void b.arrayBuffer().then(resolve, reject)
+              : reject(new Error("Image encoding failed")),
+          "image/png",
+        ),
+      ),
+    );
+    if (controller.signal.aborted) return;
     await loadTemplates();
     const { detectFields } = await import("../ocr");
     const result = await detectFields(
@@ -1607,15 +1779,8 @@ async function processCanvas(canvas: HTMLCanvasElement) {
     s.answers = [];
     signatures.clear();
     s.current = 0;
-    imageUrl = canvas.toDataURL("image/png");
-    backgroundBytes = new Uint8Array(
-      await new Promise<ArrayBuffer>((resolve, reject) =>
-        canvas.toBlob(
-          (b) => (b ? void b.arrayBuffer().then(resolve) : reject()),
-          "image/png",
-        ),
-      ),
-    );
+    imageUrl = capturedImage;
+    backgroundBytes = capturedBytes;
     recalculate();
     go("check");
     if (!s.form.fields.length) say(text("noFields"));
@@ -1623,6 +1788,9 @@ async function processCanvas(canvas: HTMLCanvasElement) {
   } catch {
     if (!controller.signal.aborted) {
       startManual();
+      imageUrl = capturedImage;
+      backgroundBytes = capturedBytes;
+      render();
       say(text("noFields"));
     }
   } finally {

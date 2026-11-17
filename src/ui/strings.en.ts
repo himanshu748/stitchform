@@ -85,6 +85,8 @@ export const en = {
   freeHint: "For example: My name is Asha Willow, date of birth 5 March 2004.",
   map: "Match answers",
   draw: "Draw signature",
+  signatureError:
+    "The signature image could not be read. Upload a PNG, JPEG or WebP image, or draw it again.",
   signatureUpload: "Upload signature image",
   clear: "Clear signature",
   yes: "Yes",
@@ -105,6 +107,18 @@ export const en = {
   listening: "Listening",
   cloudBadge: "Voice on: browser speech service",
   localBadge: "Voice on: on-device",
+  voiceDenied:
+    "Microphone or speech-service access was refused. Allow it in your browser or type your answer.",
+  voiceCapture:
+    "The microphone is unavailable. Check its connection or type your answer.",
+  voiceNetwork:
+    "The speech service could not be reached. Type your answer or try again later.",
+  voiceLanguage:
+    "Speech recognition is unavailable for this language. Type your answer instead.",
+  voiceNoSpeech: "No speech was heard. Try again or type your answer.",
+  voiceAborted: "Listening stopped. You can type your answer.",
+  exportChanged:
+    "The form or passphrase changed while the export was being made. Make it again with the current values.",
   voiceError: "Voice could not continue. Type your answer instead.",
   reviewTitle: "A second look before the final stitch.",
   reviewHint:

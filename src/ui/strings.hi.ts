@@ -83,6 +83,8 @@ export const hi: Record<StringKey, string> = {
   freeHint: "जैसे: My name is Asha Willow, date of birth 5 March 2004.",
   map: "उत्तर मिलाएँ",
   draw: "हस्ताक्षर बनाएँ",
+  signatureError:
+    "हस्ताक्षर की तस्वीर नहीं पढ़ी जा सकी। PNG, JPEG या WebP तस्वीर डालें या फिर बनाएँ।",
   signatureUpload: "हस्ताक्षर की तस्वीर डालें",
   clear: "हस्ताक्षर मिटाएँ",
   yes: "हाँ",
@@ -103,6 +105,17 @@ export const hi: Record<StringKey, string> = {
   listening: "सुन रहे हैं",
   cloudBadge: "आवाज़ चालू: ब्राउज़र की सेवा",
   localBadge: "आवाज़ चालू: इसी उपकरण पर",
+  voiceDenied:
+    "माइक्रोफ़ोन या वाक् सेवा की अनुमति नहीं मिली। ब्राउज़र में अनुमति दें या उत्तर लिखें।",
+  voiceCapture:
+    "माइक्रोफ़ोन उपलब्ध नहीं है। उसका कनेक्शन जाँचें या उत्तर लिखें।",
+  voiceNetwork:
+    "वाक् सेवा से संपर्क नहीं हो सका। उत्तर लिखें या बाद में फिर कोशिश करें।",
+  voiceLanguage: "इस भाषा में वाक् पहचान उपलब्ध नहीं है। उत्तर लिखें।",
+  voiceNoSpeech: "कोई आवाज़ नहीं सुनाई दी। फिर कोशिश करें या उत्तर लिखें।",
+  voiceAborted: "सुनना बंद हो गया। उत्तर लिख सकते हैं।",
+  exportChanged:
+    "फ़ॉर्म या पासफ़्रेज़ बदल गया है। मौजूदा जानकारी से फिर बनाएँ।",
   voiceError: "आवाज़ जारी नहीं रह सकी। उत्तर लिखें।",
   reviewTitle: "आखिरी सिलाई से पहले एक नज़र।",
   reviewHint:

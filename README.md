@@ -64,7 +64,7 @@ npm run guard
 python3 -m py_compile modal/stitchform_llm.py
 ```
 
-`npm run test:e2e` builds and serves the production files locally. It checks the typed flow, invalid and normalised dates, signature upload, PDF download, QR refill after reload, same-origin requests, Hindi, keyboard field movement, a 320px viewport and reduced motion. A separate browser case exercises actual OCR; another generates a PDF with Hindi text. Test signature imagery is synthetic and used only as a test fixture.
+`npm run test:e2e` builds and serves the production files locally. Its 15 Chromium cases cover the typed flow, invalid and normalised dates, signature upload, PDF download, QR refill after reload, same-origin requests, Hindi, a 320px viewport and reduced motion. They also exercise a keyboard-only sample-to-PDF path, voice consent and cancellation with a fake recogniser, delayed exports and signature conversion, wrong-passphrase rejection, cancelled unlocking, and manual correction after an OCR preparation failure. Other cases exercise actual OCR and generate a PDF with Hindi text. Test signature imagery is synthetic and used only as a test fixture.
 
 `npm run test:ocr` runs real Tesseract on all six generated images. The report at [reports/ocr-measurements.json](reports/ocr-measurements.json) records single-run label-text recall, not bounding-box accuracy or accuracy on real paper photos:
 
@@ -95,7 +95,7 @@ Samples come from `scripts/samples/templates/`; the generator renders the same l
 
 `/.kiro` is committed intentionally: eleven EARS specs with designs/tasks, four steering files, test-on-save/doc-sync/commit-guard hooks, a read-only `form-qa` custom agent and Context7 configuration. [KIRO_USAGE.md](KIRO_USAGE.md) records observed execution separately from configuration and manual replay. Earlier Kiro work includes a real hook/MCP smoke run and properties P1-P5; this continuation uses Codex after Kiro reported its monthly usage limit. Configured hooks did not automatically execute on Codex edits.
 
-Kiro IDE-only steering generation and Correctness tooling, the custom-agent review, and unobserved hook triggers remain checklist items. No new Kiro execution is implied by this continuation. CI is configured but has not run on GitHub because nothing was pushed.
+Kiro IDE-only steering generation and Correctness tooling, the custom-agent review, and unobserved hook triggers remain checklist items. A read-only `form-qa` attempt with Kiro CLI 3.4.0 on 17 November fired SessionStart, then failed at the monthly request limit before a review ran. CI is configured but has not run on GitHub because nothing was pushed.
 
 See [DEVPOST_STORY.md](DEVPOST_STORY.md), [VIDEO_SHOTLIST.md](VIDEO_SHOTLIST.md), [BLOG_DRAFT.md](BLOG_DRAFT.md), [SOCIAL_POST.md](SOCIAL_POST.md) and [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md) for local submission materials. They are not published or submitted.
 
@@ -121,7 +121,7 @@ Runtime packages (`dependencies`):
 | `tesseract.js` | 7.0.0 | Apache-2.0 | OCR in a local Web Worker |
 | `tesseract.js-core` | 7.0.0 | Apache-2.0 | self-hosted WebAssembly engine (transitive dependency) |
 | `qrcode` | 1.5.4 | MIT | stitch-code QR encoding (`src/stitch-code/qr.ts`) |
-| `jsqr` | 1.4.0 | Apache-2.0 | stitch-code QR decoding; scanning arrives with the UI, and the tests already use it to scan generated codes |
+| `jsqr` | 1.4.0 | Apache-2.0 | stitch-code QR decoding from images and camera frames; image refill is browser-tested |
 
 In a browser build, `qrcode` resolves to its `lib/browser.js` entry (the `browser` field of its `package.json`), which needs only `dijkstrajs` 1.0.3 (MIT) from its own dependencies. Its other dependencies, `pngjs` and `yargs`, serve its Node and command-line entries and are not bundled (checked with a trial Vite build of `qr.ts`).
 

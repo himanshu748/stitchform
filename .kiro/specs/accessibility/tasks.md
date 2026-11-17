@@ -20,10 +20,12 @@ Each task is one commit.
 - [ ] 6. QR alternative text and plain-language review of all strings in EN and HI
   - _Requirements: 3.4, 5.1, 5.2_
 
-- [ ] 7. Keyboard-only Playwright smoke path on a sample
+- [x] 7. Keyboard-only Playwright smoke path on a sample
   - _Requirements: 2.1_
 
 - [ ] 8. Manual checks (VoiceOver, zoom, narrow viewport, reduced motion); record results and gaps in README
   - _Requirements: 6.1_
 
 2026-11-17: implemented controls were checked with targeted Chromium tests (320px reflow, Hindi switch, keyboard movement, reduced motion, dialogs). No VoiceOver session or WCAG certification is claimed. Full live device coverage remains in the submission checklist.
+
+2026-11-17 follow-up: `e2e/resilience.spec.ts` completes sample selection, typed answers, review and PDF download using only Tab, Enter, arrow keys and typing. It skips the photo/signature and checks the missing-signature warning. No pointer, locator focus or locator fill is used in this path. Manual screen-reader checks remain open.

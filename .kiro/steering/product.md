@@ -4,7 +4,7 @@ inclusion: always
 
 # Product: Stitchform
 
-Stitchform turns a photo or scan of a paper form (crumpled is fine) into a correctly filled, printable PDF. It is a Kiroween 2026 entry in the Frankenstein category, also entered for Best Student Project (Frankenstein).
+Stitchform turns a photo or scan of a paper form (crumpled is fine) into a correctly filled, printable PDF. It is a Kiroween 2026 entry in the Frankenstein category, planned for the Best Student Project (Frankenstein) bonus, subject to eligibility and submission.
 
 ## Who it is for
 
@@ -12,7 +12,7 @@ People who struggle with forms: first-generation college applicants, people more
 
 ## Core flow
 
-1. Capture: camera photo or upload (image or PDF).
+1. Capture: camera photo or image upload (PNG, JPEG or WebP; PDF upload is outside v1).
 2. OCR in the browser (Tesseract.js) finds field labels and boxes.
 3. Answer each field by typing (default) or, after opting in, by voice in English or Hindi.
 4. Rule-based mapping and validation place answers and catch mistakes (dates, required fields, signature). An optional LLM can help but is never required.

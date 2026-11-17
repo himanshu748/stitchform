@@ -12,11 +12,12 @@ Deadline: **4 Dec 2026, 2:00 PM Pacific Time**, equivalent to **5 Dec 2026, 3:30
 - [x] Three requested hooks plus smoke hook and guard tests are committed. Distinguish observed triggers from configuration/replay in KIRO_USAGE.md.
 - [x] form-qa custom agent definition and Context7 MCP configuration.
 - [x] Real Kiro hook/MCP smoke evidence and property tests P1-P5.
-- [ ] Final form-qa execution in Kiro and unobserved test-on-save/doc-sync trigger evidence. Kiro previously reported a monthly usage limit; do not claim Codex execution as Kiro execution.
+- [ ] Final form-qa execution in Kiro and unobserved test-on-save/doc-sync trigger evidence. The 17 November attempt with CLI 3.4.0 fired SessionStart but failed with `MONTHLY_REQUEST_COUNT` before review; do not claim Codex execution as Kiro execution.
 - [ ] Kiro IDE foundation steering generation and Correctness feature, if used; record only actual execution.
 - [x] MIT LICENSE at the repository root; /.kiro tracked and not ignored.
 - [x] Pre-existing work and privacy/LLM limits documented in README.
 - [x] Local sample → typed answers → PDF → QR → reload/refill journey exercised.
+- [x] Keyboard-only sample-to-PDF path, delayed export/cancel paths, wrong-passphrase rejection, voice consent/cancellation with a fake recogniser, and OCR preparation failure exercised in Chromium. These do not establish physical device behaviour.
 - [ ] Real camera and microphone checks in English/Hindi; physical-photo OCR, screen reader and low-end-phone check. Do not claim these in the video until verified.
 - [ ] Optional Modal live health, auth/CORS and hosted-browser request, only after explicit deployment approval. Not required for the no-LLM judge journey.
 
