@@ -104,6 +104,7 @@ function recalculate() {
     );
   revision++;
   s.saved = false;
+  refreshDocument();
   if (hadExport && s.step === "save") say(text("exportChanged"));
 }
 function say(message: string) {
@@ -269,7 +270,9 @@ function header() {
       () => go(s.form ? s.step : "choose"),
       "wordmark",
     );
-  brand.prepend(el("span", "╱╲", "brand-mark"));
+  const mark = el("span", "╱╲", "brand-mark");
+  mark.setAttribute("aria-hidden", "true");
+  brand.prepend(mark);
   const tag = el("span", text("tag"), "micro brand-tag");
   const tools = el("div", "", "header-tools");
   const lang = selectInput(
@@ -332,24 +335,27 @@ function render() {
   viewVersion++;
   document.documentElement.lang = s.lang;
   document.documentElement.classList.toggle("large-text", s.large);
+  root.dataset.view = s.step;
   root.replaceChildren(header());
   const shell = el("div", "", "shell");
   const aside = el("aside", "", "privacy-strip");
-  aside.append(
-    el("span", "◈"),
-    el("span", text("noServer")),
-    button(text("privacy"), privacy, "text-button"),
-  );
+  aside.append(icon("shield"), el("span", text("noServer")));
   shell.append(aside);
   if (s.form) {
     const nav = el("nav", "", "steps");
-    nav.setAttribute("aria-label", "Form steps");
+    nav.setAttribute("aria-label", text("formSteps"));
     (["choose", "check", "answer", "review", "save"] as Step[]).forEach(
       (step, i) => {
+        const number = String(i + 1).padStart(2, "0");
         const b = button(
-          `${String(i + 1).padStart(2, "0")}  ${text(step)}`,
+          "",
           () => (step === "choose" ? reset() : go(step)),
           step === s.step ? "active" : "",
+        );
+        b.setAttribute("aria-label", `${number} ${text(step)}`);
+        b.append(
+          el("span", number, "step-number"),
+          el("span", text(step), "step-label"),
         );
         b.disabled =
           s.form!.fields.length === 0 &&
@@ -393,14 +399,50 @@ function render() {
 function heading(parent: HTMLElement, key: StringKey, description: StringKey) {
   const h = el("h1", text(key));
   h.tabIndex = -1;
-  parent.append(h, el("p", text(description), "lede"));
+  const group = el("div", "", "section-heading");
+  group.append(h, el("p", text(description), "lede"));
+  parent.append(group);
+}
+function icon(
+  name: "upload" | "camera" | "arrow" | "shield" | "paper" | "check",
+) {
+  const paths = {
+    upload: "M12 16V3m-5 5 5-5 5 5M4 15v5h16v-5",
+    camera: "M3 7h4l2-3h6l2 3h4v13H3Z M16 13a4 4 0 1 1-8 0 4 4 0 0 1 8 0",
+    arrow: "M4 12h15m-6-6 6 6-6 6",
+    shield: "M12 3 3 6v6c0 5 9 9 9 9s9-4 9-9V6ZM8 12l3 3 5-6",
+    paper: "M6 3h9l4 4v14H6ZM14 3v5h5M9 12h7M9 16h5",
+    check: "m5 12 4 4L19 6",
+  };
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+  svg.classList.add("ui-icon");
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", paths[name]);
+  svg.append(path);
+  return svg;
+}
+function actionButton(
+  key: StringKey,
+  action: () => void,
+  style: string,
+  glyph: Parameters<typeof icon>[0],
+) {
+  const b = button(text(key), action, style);
+  b.append(icon(glyph));
+  return b;
 }
 function chooseView(main: HTMLElement) {
   const hero = el("section", "", "hero"),
     copy = el("div", "", "hero-copy");
-  copy.append(el("p", text("eyebrow"), "micro"));
+  copy.append(el("p", text("eyebrow"), "micro eyebrow"));
   heading(copy, "hero", "intro");
-  const actions = el("div", "", "actions");
+  const start = el("section", "", "start-region");
+  const title = el("div", "", "start-title");
+  title.append(icon("upload"), el("strong", text("startTitle")));
+  start.append(title, el("p", text("startHint"), "small"));
   const upload = el("input");
   upload.type = "file";
   upload.accept = "image/png,image/jpeg,image/webp";
@@ -409,32 +451,45 @@ function chooseView(main: HTMLElement) {
     const f = upload.files?.[0];
     if (f) void importImage(f);
   };
+  const actions = el("div", "", "actions start-actions");
   actions.append(
-    button(text("upload"), () => upload.click(), "primary"),
-    button(text("camera"), () => cameraDialog(false), "secondary"),
+    actionButton("upload", () => upload.click(), "primary", "arrow"),
+    actionButton("camera", () => cameraDialog(false), "secondary", "camera"),
     upload,
   );
-  copy.append(actions, el("p", text("uploadHint"), "small"));
-  const links = el("div", "", "actions");
+  start.append(actions, el("p", text("uploadHint"), "small upload-hint"));
+  const links = el("div", "", "entry-alternatives");
   links.append(
     button(text("open"), openDialog, "text-button"),
     button(text("manual"), startManual, "text-button"),
   );
-  copy.append(links);
+  start.append(links);
+  copy.append(start);
+  const benefits = el("ul", "", "benefits");
+  for (const key of ["noAccount", "bilingual", "localFirst"] as const) {
+    const item = el("li");
+    item.append(icon("check"), el("span", text(key)));
+    benefits.append(item);
+  }
+  copy.append(benefits);
   hero.append(copy, heroArt());
   main.append(hero);
   const local = el("section", "", "local-note");
   local.append(
-    el("span", "◈", "local-icon"),
+    icon("shield"),
     el("strong", text("local")),
     el("span", text("localDetail")),
   );
   main.append(local);
   const section = el("section", "", "samples-section");
-  section.append(
-    el("p", "01 / " + text("samples"), "micro"),
-    el("h2", text("sampleIntro")),
+  const sectionHead = el("div", "", "samples-heading");
+  const titles = el("div");
+  titles.append(
+    el("p", text("samplesEyebrow"), "micro eyebrow"),
+    el("h2", text("samplesTitle")),
   );
+  sectionHead.append(titles, el("p", text("sampleIntro"), "small"));
+  section.append(sectionHead);
   const cards = el("div", "", "sample-grid");
   const names: StringKey[] = ["admission", "scholarship", "hostel"];
   SAMPLE_IDS.forEach((id, i) => {
@@ -444,22 +499,20 @@ function chooseView(main: HTMLElement) {
     img.src = `/samples/${id}.png`;
     img.alt = text(names[i]!);
     thumb.append(img, el("span", `0${i + 1}`, "card-number"));
-    card.append(
-      thumb,
-      el("p", text("sample"), "micro"),
-      el("h3", text(names[i]!)),
-    );
+    const body = el("div", "", "sample-body");
+    body.append(el("p", text("sample"), "micro"), el("h3", text(names[i]!)));
     const template = templates.find((t) => t.id === id);
-    card.append(el("p", template?.title ?? id, "small"));
-    card.append(
-      button(
-        text("trySample"),
+    body.append(el("p", template?.title ?? id, "small"));
+    body.append(
+      actionButton(
+        "trySample",
         () => {
           void loadTemplates()
             .then((ts) => chooseSample(ts.find((t) => t.id === id)!))
             .catch(() => say(text("noFields")));
         },
-        "secondary",
+        "sample-action",
+        "arrow",
       ),
     );
     const links = el("div", "", "sample-links");
@@ -472,7 +525,8 @@ function chooseView(main: HTMLElement) {
       a.download = "";
       links.append(a);
     }
-    card.append(links);
+    body.append(links);
+    card.append(thumb, body);
     cards.append(card);
   });
   section.append(cards);
@@ -481,56 +535,71 @@ function chooseView(main: HTMLElement) {
 function heroArt() {
   const art = el("div", "", "hero-art");
   art.setAttribute("aria-hidden", "true");
+  art.append(el("div", text("artFlow"), "micro art-caption"));
   const paper = el("div", "", "illustration-paper");
-  paper.append(
-    el("div", "FIELD NOTES / 026", "micro"),
-    el("div", "A form.\nA few answers.\nA fresh start.", "art-title"),
-  );
-  for (const [i, value] of [
-    "Asha Willow",
-    "05 / 03 / 2004",
-    "One less thing to worry about.",
-  ].entries()) {
-    const patch = el("div", value, `art-patch art-patch-${i}`);
-    patch.append(el("span", "✓", "art-check"));
+  paper.append(icon("paper"), el("div", text("artTitle"), "art-title"));
+  for (const [key, value] of [
+    ["artName", "artNameValue"],
+    ["artDate", "artDateValue"],
+  ] as const) {
+    const patch = el("div", "", "art-patch");
+    const copy = el("div");
+    copy.append(el("p", text(key), "micro"), el("strong", text(value)));
+    patch.append(copy, icon("check"));
     paper.append(patch);
   }
-  paper.append(el("p", "SAMPLE / DEMO DATA", "micro"));
-  art.append(
-    el("div", "PHOTO → ANSWERS → PAPER", "micro art-caption"),
-    paper,
-    el("div", "Stitched together,\non your device.", "art-note"),
-  );
+  paper.append(el("p", text("sample"), "micro art-demo"));
+  const tag = el("div", "", "art-ready");
+  const copy = el("div");
+  copy.append(el("strong", text("artReady")), el("span", text("artReadyHint")));
+  tag.append(icon("check"), copy);
+  art.append(el("div", "", "paper-shadow"), paper, tag);
   return art;
 }
 function workspace(main: HTMLElement) {
-  const layout = el("div", "", "workspace"),
+  const layout = el("div", "", `workspace workspace-${s.step}`),
     left = el("section", "", "document-panel");
+  const documentHead = el("div", "", "document-head");
+  documentHead.append(icon("paper"), el("span", text("originalForm"), "micro"));
+  left.append(documentHead);
   if (s.form!.source === "sample")
     left.append(el("p", text("sample"), "sample-banner"));
   const preview = el("details", "", "document-preview");
   preview.open = s.step === "check" || !matchMedia("(max-width:640px)").matches;
   preview.append(el("summary", text("viewForm")), patchwork());
   left.append(el("h2", s.form!.title, "document-title"), preview);
-  const tally = Object.values(s.result!.fields).filter(
-      (r) =>
-        r.status === "filled" &&
-        s.form!.fields.find((f) => f.id === r.fieldId)?.required,
-    ).length,
-    total = s.form!.fields.filter((f) => f.required).length;
-  left.append(el("p", `${tally} / ${total} ${text("progress")}`, "small"));
-  const progress = el("progress");
-  progress.max = total || 1;
-  progress.value = tally;
-  progress.setAttribute("aria-label", text("progress"));
-  left.append(progress);
-  const panel = el("section", "", "task-panel");
+  left.append(documentProgress());
+  const panel = el("section", "", `task-panel task-${s.step}`);
   if (s.step === "check") checkView(panel);
   if (s.step === "answer") answerView(panel);
   if (s.step === "review") reviewView(panel);
   if (s.step === "save") saveView(panel);
   layout.append(left, panel);
   main.append(layout);
+}
+function documentProgress() {
+  const tally = Object.values(s.result!.fields).filter(
+      (r) =>
+        r.status === "filled" &&
+        s.form!.fields.find((f) => f.id === r.fieldId)?.required,
+    ).length,
+    total = s.form!.fields.filter((f) => f.required).length;
+  const progressRegion = el("div", "", "document-progress");
+  progressRegion.append(
+    el("p", `${tally} / ${total} ${text("progress")}`, "small"),
+  );
+  const progress = el("progress");
+  progress.max = total || 1;
+  progress.value = tally;
+  progress.setAttribute("aria-label", text("progress"));
+  progressRegion.append(progress);
+  return progressRegion;
+}
+function refreshDocument() {
+  if (!s.form || !s.result) return;
+  // Refresh the paired paper/progress only; keep the answer input and its focus.
+  document.querySelector(".document")?.replaceWith(patchwork());
+  document.querySelector(".document-progress")?.replaceWith(documentProgress());
 }
 function patchwork() {
   const paper = el("div", "", "document");
@@ -768,9 +837,13 @@ function record(
 }
 function answerView(panel: HTMLElement) {
   heading(panel, "answerTitle", "answerHint");
+  const question = el("div", "", "answer-card");
+  panel.append(question);
   const f = current();
   if (!f) {
-    panel.append(button(text("reviewButton"), () => go("review"), "primary"));
+    question.append(
+      button(text("reviewButton"), () => go("review"), "primary"),
+    );
     return;
   }
   const count = el(
@@ -778,7 +851,7 @@ function answerView(panel: HTMLElement) {
     `${String(s.current + 1).padStart(2, "0")} / ${s.form!.fields.length}`,
     "micro",
   );
-  panel.append(
+  question.append(
     count,
     el("h2", label(f)),
     el("p", text(f.required ? "requiredLabel" : "optional"), "small"),
@@ -793,9 +866,9 @@ function answerView(panel: HTMLElement) {
     photo: "hintPhoto",
     text: "hintText",
   } as const;
-  panel.append(el("p", text(hint[f.type]), "small"));
+  question.append(el("p", text(hint[f.type]), "small"));
   let valueControl: HTMLInputElement | HTMLSelectElement | undefined;
-  if (f.type === "signature") signaturePanel(panel, f);
+  if (f.type === "signature") signaturePanel(question, f);
   else if (f.type !== "photo") {
     if (f.type === "choice" || f.type === "checkbox") {
       const options =
@@ -811,12 +884,12 @@ function answerView(panel: HTMLElement) {
         r.value ?? r.raw ?? "",
       );
       valueControl = control.input;
-      panel.append(control.wrap);
+      question.append(control.wrap);
     } else {
       const control = fieldInput(label(f), r.raw ?? r.value ?? "");
       valueControl = control.input;
       control.input.autocomplete = "off";
-      panel.append(control.wrap);
+      question.append(control.wrap);
     }
     valueControl.id = "answer-value";
     valueControl.setAttribute("aria-describedby", "answer-issues");
@@ -829,7 +902,7 @@ function answerView(panel: HTMLElement) {
   const issues = el("div", "", "field-issues");
   issues.id = "answer-issues";
   issues.setAttribute("aria-live", "polite");
-  panel.append(issues);
+  question.append(issues);
   function updateIssues() {
     issues.replaceChildren();
     const result = s.result!.fields[f!.id]!;
@@ -860,7 +933,7 @@ function answerView(panel: HTMLElement) {
       "quiet",
     ),
   );
-  panel.append(controls);
+  question.append(controls);
   if (valueControl?.tagName === "INPUT") {
     valueControl.onkeydown = (e) => {
       if (e.key === "Enter") {
@@ -880,10 +953,10 @@ function answerView(panel: HTMLElement) {
         "secondary",
       );
       voiceButton.id = "voice-toggle";
-      panel.append(voiceButton);
-    } else panel.append(el("p", text("voiceUnsupported"), "small"));
+      question.append(voiceButton);
+    } else question.append(el("p", text("voiceUnsupported"), "small"));
   }
-  panel.append(
+  question.append(
     button(
       text("back"),
       () => {
@@ -1123,6 +1196,8 @@ function enableVoice(input: HTMLInputElement) {
 }
 function reviewView(panel: HTMLElement) {
   heading(panel, "reviewTitle", "reviewHint");
+  const list = el("div", "", "review-list");
+  panel.append(list);
   for (const [i, f] of s.form!.fields.entries()) {
     const r = s.result!.fields[f.id]!,
       row = el("div", "", "review-row"),
@@ -1154,7 +1229,7 @@ function reviewView(panel: HTMLElement) {
         "quiet",
       ),
     );
-    panel.append(row);
+    list.append(row);
   }
   panel.append(button(text("proceed"), () => go("save"), "primary"));
   llmPanel(panel);
@@ -1317,6 +1392,9 @@ function requestLlm() {
 }
 function saveView(panel: HTMLElement) {
   heading(panel, "printTitle", "printHint");
+  const pdfPanel = el("section", "", "pdf-panel");
+  pdfPanel.append(el("h2", text("pdfSection")));
+  panel.append(pdfPanel);
   if (
     Object.values(s.result!.fields).some(
       (r) =>
@@ -1324,7 +1402,7 @@ function saveView(panel: HTMLElement) {
         s.form!.fields.find((f) => f.id === r.fieldId)?.required,
     )
   )
-    panel.append(el("p", text("pdfIssues"), "callout"));
+    pdfPanel.append(el("p", text("pdfIssues"), "callout"));
   const background = selectInput(
       text("background"),
       [
@@ -1334,9 +1412,9 @@ function saveView(panel: HTMLElement) {
       "over",
     ),
     flagged = checkbox(text("printFlagged"));
-  panel.append(background.wrap, flagged.wrap);
+  pdfPanel.append(background.wrap, flagged.wrap);
   const output = el("div", "", "generated-export");
-  panel.append(
+  pdfPanel.append(
     button(
       text("download"),
       () => {
@@ -1433,7 +1511,7 @@ function saveView(panel: HTMLElement) {
   );
   const stitch = el("section", "", "stitch-panel");
   stitch.append(
-    el("h2", text("stitchTitle")),
+    el("h2", text("codeSection")),
     el("p", text("stitchHint"), "small"),
     el("p", text("stitchContents"), "small"),
     el("p", text("stitchSafety"), "small"),

@@ -1,0 +1,382 @@
+{
+  "at": "2026-11-19T11:45:26.982Z",
+  "browser": "159.0.8154.6",
+  "mode": "Local browser inspection; demo answers; no camera, microphone or model request",
+  "errors": [],
+  "results": [
+    {
+      "name": "home-desktop",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "lang": "en",
+      "step": "choose",
+      "fonts": [
+        {
+          "family": "DM Sans",
+          "status": "loaded"
+        },
+        {
+          "family": "Fraunces",
+          "status": "loaded"
+        },
+        {
+          "family": "Stitchform Devanagari",
+          "status": "loaded"
+        }
+      ],
+      "animation": null
+    },
+    {
+      "name": "check-desktop",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "lang": "en",
+      "step": "check",
+      "fonts": [
+        {
+          "family": "DM Sans",
+          "status": "loaded"
+        },
+        {
+          "family": "Fraunces",
+          "status": "loaded"
+        },
+        {
+          "family": "Stitchform Devanagari",
+          "status": "loaded"
+        }
+      ],
+      "animation": "task-enter"
+    },
+    {
+      "name": "answer-desktop",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "lang": "en",
+      "step": "answer",
+      "fonts": [
+        {
+          "family": "DM Sans",
+          "status": "loaded"
+        },
+        {
+          "family": "Fraunces",
+          "status": "loaded"
+        },
+        {
+          "family": "Stitchform Devanagari",
+          "status": "loaded"
+        }
+      ],
+      "animation": "task-enter"
+    },
+    {
+      "name": "review-desktop",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "lang": "en",
+      "step": "review",
+      "fonts": [
+        {
+          "family": "DM Sans",
+          "status": "loaded"
+        },
+        {
+          "family": "Fraunces",
+          "status": "loaded"
+        },
+        {
+          "family": "Stitchform Devanagari",
+          "status": "loaded"
+        }
+      ],
+      "animation": "task-enter"
+    },
+    {
+      "name": "save-desktop",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "lang": "en",
+      "step": "save",
+      "fonts": [
+        {
+          "family": "DM Sans",
+          "status": "loaded"
+        },
+        {
+          "family": "Fraunces",
+          "status": "loaded"
+        },
+        {
+          "family": "Stitchform Devanagari",
+          "status": "loaded"
+        }
+      ],
+      "animation": "task-enter"
+    },
+    {
+      "name": "save-mobile",
+      "width": 390,
+      "scrollWidth": 390,
+      "lang": "en",
+      "step": "save",
+      "fonts": [
+        {
+          "family": "DM Sans",
+          "status": "loaded"
+        },
+        {
+          "family": "Fraunces",
+          "status": "loaded"
+        },
+        {
+          "family": "Stitchform Devanagari",
+          "status": "loaded"
+        }
+      ],
+      "animation": "task-enter"
+    },
+    {
+      "name": "answer-mobile",
+      "width": 390,
+      "scrollWidth": 390,
+      "lang": "en",
+      "step": "answer",
+      "fonts": [
+        {
+          "family": "DM Sans",
+          "status": "loaded"
+        },
+        {
+          "family": "Fraunces",
+          "status": "loaded"
+        },
+        {
+          "family": "Stitchform Devanagari",
+          "status": "loaded"
+        }
+      ],
+      "animation": "task-enter"
+    },
+    {
+      "name": "home-mobile",
+      "width": 390,
+      "scrollWidth": 390,
+      "lang": "en",
+      "step": "choose",
+      "fonts": [
+        {
+          "family": "DM Sans",
+          "status": "loaded"
+        },
+        {
+          "family": "Fraunces",
+          "status": "loaded"
+        },
+        {
+          "family": "Stitchform Devanagari",
+          "status": "unloaded"
+        }
+      ],
+      "animation": null
+    },
+    {
+      "name": "home-hindi-320",
+      "width": 320,
+      "scrollWidth": 320,
+      "lang": "hi",
+      "step": "choose",
+      "fonts": [
+        {
+          "family": "DM Sans",
+          "status": "loaded"
+        },
+        {
+          "family": "Fraunces",
+          "status": "loaded"
+        },
+        {
+          "family": "Stitchform Devanagari",
+          "status": "loaded"
+        }
+      ],
+      "animation": null
+    },
+    {
+      "name": "check-hindi-320",
+      "width": 320,
+      "scrollWidth": 320,
+      "lang": "hi",
+      "step": "check",
+      "fonts": [
+        {
+          "family": "DM Sans",
+          "status": "loaded"
+        },
+        {
+          "family": "Fraunces",
+          "status": "loaded"
+        },
+        {
+          "family": "Stitchform Devanagari",
+          "status": "loaded"
+        }
+      ],
+      "animation": "task-enter"
+    },
+    {
+      "name": "answer-hindi-320",
+      "width": 320,
+      "scrollWidth": 320,
+      "lang": "hi",
+      "step": "answer",
+      "fonts": [
+        {
+          "family": "DM Sans",
+          "status": "loaded"
+        },
+        {
+          "family": "Fraunces",
+          "status": "loaded"
+        },
+        {
+          "family": "Stitchform Devanagari",
+          "status": "loaded"
+        }
+      ],
+      "animation": "task-enter"
+    },
+    {
+      "name": "review-hindi-320",
+      "width": 320,
+      "scrollWidth": 320,
+      "lang": "hi",
+      "step": "review",
+      "fonts": [
+        {
+          "family": "DM Sans",
+          "status": "loaded"
+        },
+        {
+          "family": "Fraunces",
+          "status": "loaded"
+        },
+        {
+          "family": "Stitchform Devanagari",
+          "status": "loaded"
+        }
+      ],
+      "animation": "task-enter"
+    },
+    {
+      "name": "save-hindi-320",
+      "width": 320,
+      "scrollWidth": 320,
+      "lang": "hi",
+      "step": "save",
+      "fonts": [
+        {
+          "family": "DM Sans",
+          "status": "loaded"
+        },
+        {
+          "family": "Fraunces",
+          "status": "loaded"
+        },
+        {
+          "family": "Stitchform Devanagari",
+          "status": "loaded"
+        }
+      ],
+      "animation": "task-enter"
+    },
+    {
+      "name": "reduced-motion",
+      "width": 320,
+      "scrollWidth": 320,
+      "lang": "hi",
+      "step": "save",
+      "fonts": [
+        {
+          "family": "DM Sans",
+          "status": "loaded"
+        },
+        {
+          "family": "Fraunces",
+          "status": "loaded"
+        },
+        {
+          "family": "Stitchform Devanagari",
+          "status": "loaded"
+        }
+      ],
+      "animation": "none"
+    },
+    {
+      "name": "save-hindi-text-200",
+      "width": 320,
+      "scrollWidth": 320,
+      "lang": "hi",
+      "step": "save",
+      "fonts": [
+        {
+          "family": "DM Sans",
+          "status": "loaded"
+        },
+        {
+          "family": "Fraunces",
+          "status": "loaded"
+        },
+        {
+          "family": "Stitchform Devanagari",
+          "status": "loaded"
+        }
+      ],
+      "animation": "none"
+    },
+    {
+      "name": "answer-hindi-text-200",
+      "width": 320,
+      "scrollWidth": 320,
+      "lang": "hi",
+      "step": "answer",
+      "fonts": [
+        {
+          "family": "DM Sans",
+          "status": "loaded"
+        },
+        {
+          "family": "Fraunces",
+          "status": "loaded"
+        },
+        {
+          "family": "Stitchform Devanagari",
+          "status": "loaded"
+        }
+      ],
+      "animation": "none"
+    },
+    {
+      "name": "home-hindi-text-200",
+      "width": 320,
+      "scrollWidth": 320,
+      "lang": "hi",
+      "step": "choose",
+      "fonts": [
+        {
+          "family": "DM Sans",
+          "status": "loaded"
+        },
+        {
+          "family": "Fraunces",
+          "status": "loaded"
+        },
+        {
+          "family": "Stitchform Devanagari",
+          "status": "loaded"
+        }
+      ],
+      "animation": null
+    }
+  ]
+}

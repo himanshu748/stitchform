@@ -7,6 +7,8 @@ Written 2026-11-15, revised the same day after a review. Deadline: **4 Dec 2026,
 
 ## Local implementation status, 2026-11-17
 
+2026-11-19 UI extension: F12, the user-requested Gestalt revamp, is specified in `.kiro/specs/ui-revamp/`. Primary judging criterion: **Design**. Supporting criteria: **Presentation** (clear entry/demo journey) and **Potential Impact** (less competing visual hierarchy, to be validated with people later). It covers the entry and all five existing workspace steps, preserving the local/no-LLM and privacy boundaries.
+
 The no-LLM application is implemented locally: three bilingual sample forms, capture/upload and local OCR, field correction, typed answers and opt-in voice wrapper, validation, PDF output, encrypted QR/file export and QR refill after reload. Codex completed the continuation after Kiro reported a monthly usage limit. Existing Kiro execution evidence is retained separately in KIRO_USAGE.md.
 
 See [README](README.md) for the runnable journey and [submission checklist](SUBMISSION_CHECKLIST.md) for outstanding work. Live microphone/camera, physical-photo quality, screen-reader checks, final Kiro custom-agent/hook runs, hosted-provider behaviour and all publication/submission steps remain unverified or intentionally unperformed. Do not equate these local results with a submitted entry.

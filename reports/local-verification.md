@@ -48,6 +48,8 @@ The clean-copy quickstart above applies to its recorded commit. No new dependenc
 
 ## Local continuation, 2026-11-19
 
+The later owner-requested Gestalt UI revamp is recorded in [ui-revamp.md](ui-revamp.md). It includes rendered desktop/mobile checks, loaded self-hosted fonts, reduced motion, a 200% CSS text-size simulation at 320px and a regression for live paper/answer status consistency. All 18 existing Chromium cases passed after the changes. This does not change the physical-device, screen-reader, provider or release limits below.
+
 The cancelled server was restarted and returned HTTP 200 at `http://127.0.0.1:5173/`. The work remains in the separate Stitchform checkout; sibling projects were not edited.
 
 - Deliverable-docs task 3: two Vitest checks now cover the exact social-post prefix and blog hackathon disclosure.

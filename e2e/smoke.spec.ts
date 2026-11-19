@@ -31,6 +31,14 @@ test("typed no-LLM flow: validation, signature, PDF, encrypted QR refill", async
   await page.getByLabel("Date of birth", { exact: true }).press("Tab");
   await expect(page.locator("#answer-issues")).toContainText("date");
   await page.getByLabel("Date of birth", { exact: true }).fill("5 March 2004");
+  await page.getByLabel("Date of birth", { exact: true }).press("Tab");
+  await expect(page.locator('.patch[data-field-id="dob"]')).toHaveAttribute(
+    "data-status",
+    "filled",
+  );
+  await expect(page.locator('.patch[data-field-id="dob"]')).toContainText(
+    "05/03/2004",
+  );
   await page.getByLabel("Date of birth", { exact: true }).press("Enter");
   await page
     .getByLabel("ID type", { exact: true })

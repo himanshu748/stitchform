@@ -214,6 +214,8 @@ From the Kiro docs (pages cited in PLAN.md section 8) and what was observed on t
 
 ## Codex continuation, 2026-11-17
 
+2026-11-19, owner-requested UI revamp: Codex wrote the twelfth feature spec (`ui-revamp`, with EARS requirements, design and tasks), mapped it to Design/Presentation/Potential Impact in PLAN.md, and implemented Gestalt grouping across the entry and five form steps. It added self-hosted OFL Fraunces/DM Sans fonts, original decorative icons/paper art, a connected stepper and separate task/export regions. Context7 queried MDN for variable-font declarations and SVG/accessibility APIs. The motion-design skill informed short, reduced-motion-aware transitions. Existing data-processing adapters and privacy/consent boundaries were retained. No additional Kiro run, hook execution or custom-agent review is implied. See `reports/ui-revamp.md` for references actually inspected, browser failures/fallbacks, screenshots and validation limits.
+
 After Kiro's reported monthly usage limit interrupted the build, the owner continued this thread with Codex. Changes from this point are Codex work, not additional Kiro execution. The inherited LLM client and key store passed 558 tests and TypeScript checks before being committed separately. Existing Kiro evidence above remains historical evidence at its recorded boundary.
 
 2026-11-19: Codex resumed after another T3 server restart and restored the local Vite server. Deliverable-docs task 3 now has Vitest checks for the required social-post tag and blog hackathon disclosure. These checks do not publish either draft or replace the pending Kiro custom-agent review. No new Kiro request was made in this resumption.
