@@ -1,0 +1,45 @@
+{
+  "generatedAt": "2026-11-19T10:58:32.293Z",
+  "runtime": "v26.12.0",
+  "browser": "159.0.8154.6",
+  "platform": "darwin arm64",
+  "libraries": {
+    "pdfLib": "1.17.1",
+    "fontkit": "1.1.1",
+    "nodeCompatibilityRuntime": "regenerator-runtime 0.13.11 (Tesseract dependency)"
+  },
+  "font": "Noto Sans Devanagari Regular v2.007",
+  "sampleType": "DEMO DATA; synthetic phrases, not personal data",
+  "phrases": [
+    {
+      "label": "Common conjuncts",
+      "text": "क्ष त्र ज्ञ श्र"
+    },
+    {
+      "label": "Application phrase",
+      "text": "प्रवेश के लिए क्षमा और श्रद्धा"
+    },
+    {
+      "label": "Name and study",
+      "text": "श्रद्धा त्रिपाठी शिक्षा"
+    },
+    {
+      "label": "Scholarship",
+      "text": "छात्रवृत्ति आवेदन"
+    },
+    {
+      "label": "Short and long vowels",
+      "text": "कि की कृ के कै को कौ"
+    },
+    {
+      "label": "Marks and digits",
+      "text": "अंक ०५/०३/२००४"
+    }
+  ],
+  "artifacts": [
+    "output/pdf/hindi-rendering-comparison.pdf",
+    "output/pdf/hindi-rendering-comparison.png"
+  ],
+  "inspection": "Requires visual review; successful PDF creation does not establish correct shaping.",
+  "limits": "Chromium canvas and Poppler only; not Firefox, print hardware, assistive technology or all Hindi text."
+}

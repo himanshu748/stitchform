@@ -82,6 +82,8 @@ Refer to the JSON for the recorded per-run timing; a subsequent run overwrites t
 
 Current limitations: no real camera/microphone or screen-reader session verified; no hosted app, live Modal/Ollama proof, physical crumpled-paper trial, or general-form accuracy claim. Keyboard/reflow checks are targeted checks, not a WCAG certification. Hindi PDF text is rasterised. Gemini is not offered because browser access/free-tier suitability was not confirmed for this implementation.
 
+[Hindi rendering comparison](reports/hindi-rendering-comparison.md): six phrases were generated with both fontkit and the actual canvas renderer, then inspected after Poppler rendering on 19 November 2026. Both were readable in this check; the app retains the specified canvas path. The report includes the PDF/PNG, exact environment, reproduction command and limits.
+
 ## Development and architecture
 
 ```sh
@@ -122,6 +124,7 @@ Runtime packages (`dependencies`):
 |---|---|---|---|
 | `pdf-lib` | 1.17.1 | MIT | browser PDF generation and sample generator |
 | `@pdf-lib/fontkit` | 1.1.1 | MIT | Hindi font comparison in PDF verification |
+| `regenerator-runtime` | 0.13.11 | MIT | existing Tesseract dependency; preloaded only by the local fontkit comparison utility to support its Node iterator |
 | `tesseract.js` | 7.0.0 | Apache-2.0 | OCR in a local Web Worker |
 | `tesseract.js-core` | 7.0.0 | Apache-2.0 | self-hosted WebAssembly engine (transitive dependency) |
 | `qrcode` | 1.5.4 | MIT | stitch-code QR encoding (`src/stitch-code/qr.ts`) |

@@ -20,8 +20,10 @@ Each task is one commit. New dependencies and the font go into README "Pre-exist
 - [x] 6. Add the sample-PDF and photo backgrounds
   - _Requirements: 1.4_
 
-- [ ] 7. Implement `text-image.ts` (canvas path) and compare it with fontkit `drawText` on Hindi conjuncts; record screenshots and the decision in KIRO_USAGE.md
+- [x] 7. Implement `text-image.ts` (canvas path) and compare it with fontkit `drawText` on Hindi conjuncts; record screenshots and the decision in KIRO_USAGE.md
   - _Requirements: 3.1, 3.3_
 
 - [x] 8. Pre-download issue list, "print anyway" option and warnings in lab-ui; download and print view
   - _Requirements: 4.1, 4.2, 5.2_
+
+2026-11-19: `scripts/compare-hindi-pdf.mjs` generated the six-phrase comparison under `output/pdf/`; Poppler output was inspected. Both columns were readable for these phrases. The app retains its specified canvas path; broader shaping/extraction/viewer coverage is not established. The report in `reports/hindi-rendering-comparison.md` records the compatibility-runtime preload, reproduction, observed result and limits. No new runtime package or application renderer change was introduced.
