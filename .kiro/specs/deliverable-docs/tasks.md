@@ -8,7 +8,7 @@ Each task is one commit. The agent drafts; the owner publishes and submits.
 - [x] 2. Keep KIRO_USAGE.md current per Kiro-related event
   - _Requirements: 2.1, 2.2, 2.3_
 
-- [ ] 3. Add the Vitest doc checks (social post prefix, blog hackathon sentence)
+- [x] 3. Add the Vitest doc checks (social post prefix, blog hackathon sentence)
   - _Requirements: 5.1, 5.2_
 
 - [x] 4. Draft DEVPOST_STORY.md, including what did not work; use the established Devpost headings; final comparison against the owner’s live form is pending
@@ -25,3 +25,5 @@ Each task is one commit. The agent drafts; the owner publishes and submits.
 
 - [ ] 8. form-qa agent review of all seven docs for unsupported claims, demo-data labels and em dashes; fix findings
   - _Requirements: 3.2, 7.1, 7.2_
+
+2026-11-19: `src/docs/deliverables.test.ts` checks the literal social-post prefix and the blog's hackathon disclosure. These are local Vitest checks written by Codex; the Kiro custom-agent review is still pending.

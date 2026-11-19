@@ -52,6 +52,8 @@ Stitch codes contain form IDs and text answers, not custom layouts. Built-in sam
 
 ## Verification and measured evidence
 
+`npm test` includes checks for the required social-post prefix and blog hackathon disclosure. The drafts remain local and unpublished.
+
 ```sh
 npm run typecheck
 npm test
