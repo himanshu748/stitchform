@@ -64,6 +64,15 @@ let viewVersion = 0,
 const signatureJobs = new WeakMap<FormField, number>();
 const root = document.querySelector<HTMLDivElement>("#app")!;
 const text = (key: StringKey) => (s.lang === "hi" ? hi[key] : en[key]);
+const fieldTypeKeys: Record<FieldType, StringKey> = {
+  text: "typeText",
+  date: "typeDate",
+  number: "typeNumber",
+  choice: "typeChoice",
+  checkbox: "typeCheckbox",
+  signature: "typeSignature",
+  photo: "typePhoto",
+};
 const context = () => {
   const now = new Date();
   return {
@@ -293,7 +302,13 @@ function header() {
 }
 function privacy() {
   modal(text("privacyTitle"), (_, body) => {
-    body.append(el("p", text("privacyBody")));
+    for (const key of [
+      "privacyBody",
+      "privacyStorage",
+      "privacyAssets",
+      "privacyConsent",
+    ] as const)
+      body.append(el("p", text(key)));
     body.append(
       el(
         "p",
@@ -306,8 +321,8 @@ function privacy() {
       el(
         "p",
         llm.id === "none"
-          ? "LLM: " + text("off")
-          : `LLM: ${llm.id} (${llm.id === "modal" ? new URL(llm.endpoint).host : llm.id === "ollama" ? new URL(llm.baseUrl).host : ""})`,
+          ? text("llm") + ": " + text("off")
+          : `${text("llm")}: ${llm.id} (${llm.id === "modal" ? new URL(llm.endpoint).host : llm.id === "ollama" ? new URL(llm.baseUrl).host : ""})`,
       ),
     );
   });
@@ -611,7 +626,10 @@ function patchwork() {
 }
 function checkView(panel: HTMLElement) {
   heading(panel, "checkTitle", "checkHint");
-  panel.append(el("p", text("ocrNote"), "small"));
+  panel.append(
+    el("p", text("checkKeyboard"), "small"),
+    el("p", text("ocrNote"), "small"),
+  );
   const f = current();
   if (f) {
     const name = fieldInput(text("fieldLabel"), f.label);
@@ -623,20 +641,16 @@ function checkView(panel: HTMLElement) {
     panel.append(name.wrap);
     const type = selectInput(
       text("fieldType"),
-      [
-        "text",
-        "date",
-        "number",
-        "choice",
-        "checkbox",
-        "signature",
-        "photo",
-      ].map((v) => ({ value: v, label: v })),
+      (Object.keys(fieldTypeKeys) as FieldType[]).map((v) => ({
+        value: v,
+        label: text(fieldTypeKeys[v]),
+      })),
       f.type,
     );
     type.input.onchange = () => {
       f.type = type.input.value as FieldType;
-      if (f.type === "choice") f.choices = ["Option 1", "Option 2"];
+      if (f.type === "choice")
+        f.choices = [text("optionOne"), text("optionTwo")];
       recalculate();
       render();
     };
@@ -711,7 +725,7 @@ function checkView(panel: HTMLElement) {
         const id = `field-${Date.now()}`;
         s.form!.fields.push({
           id,
-          label: "New field",
+          label: text("newField"),
           type: "text",
           required: false,
           page: 0,
@@ -1094,6 +1108,7 @@ function enableVoice(input: HTMLInputElement) {
   modal(text("voiceTitle"), (d, body) => {
     body.append(
       el("p", text("voiceNotice")),
+      el("p", text("voiceLocal")),
       button(
         text("agreeVoice"),
         () => {
@@ -1420,6 +1435,9 @@ function saveView(panel: HTMLElement) {
   stitch.append(
     el("h2", text("stitchTitle")),
     el("p", text("stitchHint"), "small"),
+    el("p", text("stitchContents"), "small"),
+    el("p", text("stitchSafety"), "small"),
+    el("p", text("stitchRecovery"), "small"),
   );
   const codeOutput = el("div", "", "generated-export");
   let pendingCode = false;
@@ -1516,7 +1534,7 @@ function saveView(panel: HTMLElement) {
           s.saved = true;
           passphrase = phrase;
           render();
-          say(`PBKDF2 + AES-GCM: ${Math.round(performance.now() - start)} ms`);
+          say(`${text("timing")}: ${Math.round(performance.now() - start)} ms`);
         })()
           .catch(() => {
             if (active()) say(text("badCode"));

@@ -45,3 +45,13 @@ Three regressions were reproduced before repairs: voice did not abort on next-fi
 | Repository guard | Passed | `npm run guard`: 223 tracked files scanned, TypeScript and tests passed. Manually invoked through Codex, not a Kiro hook trigger |
 
 The clean-copy quickstart above applies to its recorded commit. No new dependencies were introduced in this follow-up. The physical-device, screen-reader, Firefox, live-provider and publication gaps above remain open.
+
+## Local continuation, 2026-11-19
+
+The cancelled server was restarted and returned HTTP 200 at `http://127.0.0.1:5173/`. The work remains in the separate Stitchform checkout; sibling projects were not edited.
+
+- Deliverable-docs task 3: two Vitest checks now cover the exact social-post prefix and blog hackathon disclosure.
+- Accessibility task 6: editorial review of both UI string modules, shorter notices, translated field types/new-field defaults, explicit encrypted-QR alternative text, and passphrase-loss/separate-storage warnings.
+- Rendered English desktop and Hindi 320px save screens were inspected. A squeezed language selector was corrected by wrapping mobile header controls; the test asserts its usable width and no horizontal overflow.
+- `npm run test:e2e`: all 18 Chromium cases passed, including three new accessibility cases and the earlier keyboard, consent/cancellation, OCR, PDF and refill paths. Screenshots are local Playwright output, not evidence of assistive-technology operation.
+- Physical camera/microphone, VoiceOver, low-end phones, Firefox, live models, Kiro custom-agent completion and public deployment/submission remain unverified or gated as recorded above. No additional Kiro request was made.

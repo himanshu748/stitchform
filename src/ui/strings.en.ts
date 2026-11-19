@@ -1,6 +1,6 @@
 export const en = {
   otherForm:
-    "This code belongs to another form. Apply its field IDs to the current form anyway? Check every result.",
+    "This code belongs to another form; check every answer if you use it here. Apply the saved answers to this form?",
   customRestore:
     "Reopen the original image or custom form before applying this code. Custom layouts are not stored in the code.",
   viewForm: "View form",
@@ -22,7 +22,7 @@ export const en = {
     "Turn a paper form into a filled, printable PDF. One answer, one stitch at a time.",
   local: "Your answers stay here.",
   localDetail:
-    "OCR, typed answers, PDF creation and encryption run in your browser. No account needed. Voice and AI help are optional.",
+    "Form reading, typed answers, PDFs and encryption run in your browser. No account is needed; voice and AI help are optional.",
   upload: "Upload an image",
   camera: "Take a photo",
   open: "Open a stitch code",
@@ -40,7 +40,7 @@ export const en = {
   hostel: "Hostel admission",
   readTitle: "Reading the paper",
   reading:
-    "Reading English and Hindi labels on this device. The first run loads the OCR engine.",
+    "Reading English and Hindi labels on this device. The first run downloads the files needed to read them.",
   cancel: "Cancel",
   ocrNote:
     "Detection works best on samples. Check every label and box on other forms.",
@@ -48,13 +48,25 @@ export const en = {
     "No fields were found. Add fields by hand, retake the photo, or try a sample.",
   checkTitle: "Make sure every box has a name.",
   checkHint:
-    "Select a field to edit it. Drag its outline to move it, or use arrow keys. Shift + arrow resizes it. Check placement before continuing.",
+    "Select a field to change its name or box. Check its position before you continue.",
+  checkKeyboard:
+    "Drag the outline or use arrow keys to move it. Shift + arrow resizes it.",
   fields: "Fields",
   add: "Add a field",
   remove: "Delete field",
   deleteQuestion: "Delete this field and its answer?",
   fieldLabel: "Field label",
   fieldType: "Field type",
+  typeText: "Text",
+  typeDate: "Date",
+  typeNumber: "Number",
+  typeChoice: "Choose one option",
+  typeCheckbox: "Yes or no",
+  typeSignature: "Signature",
+  typePhoto: "Photograph",
+  newField: "New field",
+  optionOne: "Option 1",
+  optionTwo: "Option 2",
   required: "Required",
   choices: "Choices, separated by commas",
   x: "Left",
@@ -75,8 +87,7 @@ export const en = {
   hintCheckbox: "Choose yes or no.",
   hintSignature:
     "Draw your own signature or upload its image. A typed name is not a signature.",
-  hintPhoto:
-    "The photo box stays blank in v1. Attach a photograph after printing.",
+  hintPhoto: "Leave this box blank and attach a photograph after printing.",
   submit: "Save answer and next",
   back: "Previous field",
   skip: "Skip for now",
@@ -101,7 +112,9 @@ export const en = {
   voiceUnsupported: "Voice is not supported here. You can type every answer.",
   voiceTitle: "Before you speak",
   voiceNotice:
-    "Audio may be sent to the browser vendor’s speech service. Where supported, we use on-device recognition for your language. The transcript stays editable. Continue only if you agree.",
+    "Your browser may send audio to its speech service. Continue only if you agree.",
+  voiceLocal:
+    "Where supported, speech is recognised on this device. You can edit the recognised words before saving.",
   agreeVoice: "I agree, enable voice",
   install: "Download the on-device language pack?",
   listening: "Listening",
@@ -140,13 +153,18 @@ export const en = {
   pdfReady: "PDF created on this device.",
   stitchTitle: "Keep the answers. Leave no account.",
   stitchHint:
-    "A stitch code encrypts the answers with a passphrase. Keep both somewhere safe. Anyone with both can read the answers. Signatures, photos and API keys are excluded.",
+    "A stitch code locks your text answers with a passphrase (a long password).",
+  stitchContents: "Signatures, photos and API keys are left out.",
+  stitchSafety:
+    "Keep the code and passphrase apart. Anyone with both can read the answers.",
+  stitchRecovery:
+    "If you lose the passphrase, these saved answers cannot be recovered.",
   passphrase: "Passphrase",
   generate: "Generate five words",
   encrypt: "Make stitch code",
-  deriving: "Deriving an encryption key on this device…",
+  deriving: "Locking your answers on this device…",
   qrAlt:
-    "Encrypted Stitchform answers. Open this QR image with Stitchform and your passphrase.",
+    "QR stitch code containing encrypted answers. Open it in Stitchform with your passphrase.",
   qrDownload: "Download QR image",
   fileDownload: "Download .stitch file",
   tooLarge:
@@ -181,7 +199,12 @@ export const en = {
   llmBusy: "Waiting for the model. Your form is still editable.",
   privacyTitle: "A form without a data trail.",
   privacyBody:
-    "Answers and images live in this tab’s memory. Reloading clears them. Only your downloaded PDF and encrypted stitch code persist. No analytics or server-side answer storage. OCR data and fonts are served from this site. Voice and model requests require separate consent.",
+    "This tab forgets your answers and images when you reload it. Download a PDF to keep a filled copy, or a stitch code to keep text answers.",
+  privacyStorage:
+    "This app does not store your answers on a server or use analytics.",
+  privacyAssets: "Form-reading files and fonts come from this site.",
+  privacyConsent:
+    "Voice and AI help ask for your permission before sending audio or answers.",
   close: "Close",
   unsaved: "Starting again clears this tab’s answers. Continue?",
   cameraTitle: "Keep the whole page in view",

@@ -66,7 +66,9 @@ npm run guard
 python3 -m py_compile modal/stitchform_llm.py
 ```
 
-`npm run test:e2e` builds and serves the production files locally. Its 15 Chromium cases cover the typed flow, invalid and normalised dates, signature upload, PDF download, QR refill after reload, same-origin requests, Hindi, a 320px viewport and reduced motion. They also exercise a keyboard-only sample-to-PDF path, voice consent and cancellation with a fake recogniser, delayed exports and signature conversion, wrong-passphrase rejection, cancelled unlocking, and manual correction after an OCR preparation failure. Other cases exercise actual OCR and generate a PDF with Hindi text. Test signature imagery is synthetic and used only as a test fixture.
+`npm run test:e2e` builds and serves the production files locally. Its 18 Chromium cases cover the typed flow, invalid and normalised dates, signature upload, PDF download, QR refill after reload, same-origin requests, Hindi, a 320px viewport and reduced motion. They also exercise a keyboard-only sample-to-PDF path, voice consent and cancellation with a fake recogniser, delayed exports and signature conversion, wrong-passphrase rejection, cancelled unlocking, and manual correction after an OCR preparation failure. Additional cases check Hindi field types/defaults and accessible QR names/privacy warnings in both languages. Other cases exercise actual OCR and generate a PDF with Hindi text. Test signature imagery is synthetic and used only as a test fixture.
+
+On 19 November 2026, Chromium checks and rendered inspection covered the English desktop and Hindi 320px save screens. Field types and new-field defaults are translated; notices use short paragraphs; the QR names its encrypted contents; the mobile language control stays readable. This is an editorial and browser check, not a screen-reader session, comprehension study or accessibility certification.
 
 `npm run test:ocr` runs real Tesseract on all six generated images. The report at [reports/ocr-measurements.json](reports/ocr-measurements.json) records single-run label-text recall, not bounding-box accuracy or accuracy on real paper photos:
 

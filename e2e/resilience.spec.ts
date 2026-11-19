@@ -111,7 +111,9 @@ test("a passphrase edit invalidates encryption already in progress", async ({
   await page.evaluate(() =>
     (window as unknown as { releaseStitchKey: () => void }).releaseStitchKey(),
   );
-  await expect(page.getByRole("status")).not.toContainText("Deriving");
+  await expect(page.getByRole("status")).not.toContainText(
+    "Locking your answers",
+  );
   await expect(
     page.getByRole("link", { name: "Download QR image" }),
   ).toHaveCount(0);
