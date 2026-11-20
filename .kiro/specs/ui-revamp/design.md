@@ -1,5 +1,9 @@
 # Design: Gestalt UI revamp
 
+## 20 November revision
+
+Owner feedback called for a functional application layout. The entry now combines import controls and a compact practice-form list with a live preview of the real sample. The workspace uses a document viewer and a task pane with a shared step bar. Cool slate and blue distinguish work surface from active controls. DM Sans serves all Latin interface text and Noto Sans Devanagari serves Hindi. The decorative hero and its display font were retired. Proximity, similarity, continuity and figure-ground continue to guide the working layout. The design and browser evidence are recorded in `reports/ui-revamp.md`.
+
 The user requested a UI revamp using Gestalt techniques. This is a visual/interaction extension of lab-ui and accessibility, not a change to form-processing contracts. Primary judging mapping: Design; supporting Presentation and Potential Impact through a clearer judge/user journey. No usability improvement is claimed as measured.
 
 ## Direction and references

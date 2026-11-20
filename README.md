@@ -6,9 +6,9 @@ Built for the [Kiroween 2026 hackathon](https://kiroween.devpost.com/) in the **
 
 **Working app URL:** TBD after the owner approves Vercel deployment.
 
-![The local Stitchform workspace with a fictional form, a focused question card and connected step navigation](output/playwright/revamp-workspace-preview.png)
+![The Stitchform editor with a fictional college form beside the active date-of-birth field](output/playwright/workspace-answer.png)
 
-The interface uses Gestalt grouping: related controls stay together, a connected path shows the five steps, and the active question stands apart from the paper preview. [UI revamp notes and checks](reports/ui-revamp.md) describe the design decisions and local verification; no user-study result is claimed.
+Open a photo or choose a practice form from the same screen. The editor pairs the original page with controls for checking fields, entering answers, and exporting. [Workspace screens and verification](reports/ui-revamp.md#document-workspace-revision-2026-11-20)
 
 ## Try it locally
 
@@ -122,14 +122,13 @@ From the initial commit created by [T3 Code](https://t3.codes):
 
 Third-party npm packages, pinned to exact versions in `package.json`.
 
-Interface fonts are self-hosted; no font service is contacted by the app. New font files came from the official Google Fonts repository on 19 November 2026; their internal version metadata and SHA-256 hashes are recorded in [the UI report](reports/ui-revamp.md).
+Interface fonts are self-hosted. DM Sans came from the official Google Fonts repository on 19 November 2026. Its internal version and SHA-256 appear in [the UI report](reports/ui-revamp.md).
 
 | Font | Internal version | Licence | Use |
 |---|---|---|---|
-| [Fraunces](https://github.com/google/fonts/tree/main/ofl/fraunces) | 1.000 (`b76b70a41`) | SIL OFL 1.1, `public/fonts/fraunces-OFL.txt` | headings and wordmark |
-| [DM Sans](https://github.com/google/fonts/tree/main/ofl/dmsans) | 4.004 | SIL OFL 1.1, `public/fonts/dmsans-OFL.txt` | body text, controls and labels |
+| [DM Sans](https://github.com/google/fonts/tree/main/ofl/dmsans) | 4.004 | SIL OFL 1.1, `public/fonts/dmsans-OFL.txt` | interface headings, body text and controls |
 
-Existing Noto Sans Devanagari remains the Hindi fallback and PDF canvas font. The new paper illustration and decorative SVG icons were written for Stitchform; no reference-site assets, branding or copy were reused.
+Noto Sans Devanagari serves the Hindi interface and PDF canvas. The interface preview uses the repository's fictional sample forms.
 
 fontTools 4.60.2 (MIT) was used locally to read font version metadata; it is not an application dependency.
 

@@ -32,6 +32,9 @@ test("typed no-LLM flow: validation, signature, PDF, encrypted QR refill", async
   await expect(page.locator("#answer-issues")).toContainText("date");
   await page.getByLabel("Date of birth", { exact: true }).fill("5 March 2004");
   await page.getByLabel("Date of birth", { exact: true }).press("Tab");
+  await expect(
+    page.getByLabel("Date of birth", { exact: true }),
+  ).toHaveAttribute("aria-invalid", "false");
   await expect(page.locator('.patch[data-field-id="dob"]')).toHaveAttribute(
     "data-status",
     "filled",
@@ -102,7 +105,7 @@ test("typed no-LLM flow: validation, signature, PDF, encrypted QR refill", async
   await qr.saveAs(qrPath);
   await page.reload();
   await expect(
-    page.getByRole("heading", { name: "A little help with the paperwork." }),
+    page.getByRole("heading", { name: "Open a form" }),
   ).toBeVisible();
   await page
     .getByRole("button", { name: "Open a stitch code", exact: true })
@@ -124,7 +127,7 @@ test("mobile, Hindi, keyboard and reduced-motion states", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "A little help with the paperwork." }),
+    page.getByRole("heading", { name: "Open a form" }),
   ).toBeVisible();
   expect(
     await page.evaluate(
@@ -141,9 +144,13 @@ test("mobile, Hindi, keyboard and reduced-motion states", async ({ page }) => {
     )
       break;
   }
+  await expect(page.locator(".sample-viewer img")).toHaveAttribute(
+    "alt",
+    "College admission",
+  );
   await page.keyboard.press("Enter");
   await expect(
-    page.getByRole("heading", { name: "Make sure every box has a name." }),
+    page.getByRole("heading", { name: "Check detected fields" }),
   ).toBeVisible();
   await page.getByLabel("Language").selectOption("hi");
   await expect(page.locator("html")).toHaveAttribute("lang", "hi");
@@ -195,7 +202,7 @@ test("uploaded sample runs local English/Hindi OCR without third-party requests"
     .locator("main input[type=file]")
     .setInputFiles("public/samples/sample-moonfield-scholarship.png");
   await expect(
-    page.getByRole("heading", { name: "Make sure every box has a name." }),
+    page.getByRole("heading", { name: "Check detected fields" }),
   ).toBeVisible({ timeout: 60_000 });
   await expect(
     page.getByRole("heading", {

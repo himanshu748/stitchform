@@ -267,13 +267,12 @@ function header() {
   const h = el("header", "", "header"),
     brand = button(
       text("brand"),
-      () => go(s.form ? s.step : "choose"),
+      () => (s.form ? reset() : go("choose")),
       "wordmark",
     );
   const mark = el("span", "╱╲", "brand-mark");
   mark.setAttribute("aria-hidden", "true");
   brand.prepend(mark);
-  const tag = el("span", text("tag"), "micro brand-tag");
   const tools = el("div", "", "header-tools");
   const lang = selectInput(
     text("language"),
@@ -300,7 +299,7 @@ function header() {
     lang.wrap,
     button(text("privacy"), () => privacy(), "quiet"),
   );
-  h.append(brand, tag, tools);
+  h.append(brand, tools);
   return h;
 }
 function privacy() {
@@ -338,9 +337,6 @@ function render() {
   root.dataset.view = s.step;
   root.replaceChildren(header());
   const shell = el("div", "", "shell");
-  const aside = el("aside", "", "privacy-strip");
-  aside.append(icon("shield"), el("span", text("noServer")));
-  shell.append(aside);
   if (s.form) {
     const nav = el("nav", "", "steps");
     nav.setAttribute("aria-label", text("formSteps"));
@@ -392,7 +388,9 @@ function render() {
   else workspace(main);
   shell.append(main);
   const footer = el("footer");
-  footer.append(el("span", text("footer")), el("span", text("help")));
+  const local = el("span", "", "local-status");
+  local.append(icon("shield"), el("span", text("noServer")));
+  footer.append(local);
   shell.append(footer);
   root.append(shell);
 }
@@ -424,148 +422,119 @@ function icon(
   svg.append(path);
   return svg;
 }
-function actionButton(
-  key: StringKey,
-  action: () => void,
-  style: string,
-  glyph: Parameters<typeof icon>[0],
-) {
-  const b = button(text(key), action, style);
-  b.append(icon(glyph));
-  return b;
-}
+const sampleNames = ["admission", "scholarship", "hostel"] as const;
+
 function chooseView(main: HTMLElement) {
-  const hero = el("section", "", "hero"),
-    copy = el("div", "", "hero-copy");
-  copy.append(el("p", text("eyebrow"), "micro eyebrow"));
-  heading(copy, "hero", "intro");
+  main.className = "start-screen";
+  heading(main, "hero", "intro");
+
+  const layout = el("div", "", "start-layout");
+  const sources = el("div", "", "form-sources");
   const start = el("section", "", "start-region");
-  const title = el("div", "", "start-title");
-  title.append(icon("upload"), el("strong", text("startTitle")));
-  start.append(title, el("p", text("startHint"), "small"));
   const upload = el("input");
   upload.type = "file";
   upload.accept = "image/png,image/jpeg,image/webp";
   upload.hidden = true;
   upload.onchange = () => {
-    const f = upload.files?.[0];
-    if (f) void importImage(f);
+    const file = upload.files?.[0];
+    if (file) void importImage(file);
   };
-  const actions = el("div", "", "actions start-actions");
-  actions.append(
-    actionButton("upload", () => upload.click(), "primary", "arrow"),
-    actionButton("camera", () => cameraDialog(false), "secondary", "camera"),
-    upload,
-  );
-  start.append(actions, el("p", text("uploadHint"), "small upload-hint"));
-  const links = el("div", "", "entry-alternatives");
-  links.append(
-    button(text("open"), openDialog, "text-button"),
+
+  const uploadButton = button("", () => upload.click(), "upload-trigger");
+  const uploadCopy = el("span", "", "upload-copy");
+  const uploadHint = el("span", text("uploadHint"), "small");
+  uploadHint.id = "upload-form-hint";
+  uploadCopy.append(el("strong", text("upload")), uploadHint);
+  uploadButton.append(icon("upload"), uploadCopy);
+  uploadButton.setAttribute("aria-label", text("upload"));
+  uploadButton.setAttribute("aria-describedby", uploadHint.id);
+  const alternatives = el("div", "", "entry-alternatives");
+  const camera = button(text("camera"), () => cameraDialog(false), "secondary");
+  camera.prepend(icon("camera"));
+  alternatives.append(
+    camera,
+    button(text("open"), openDialog, "secondary"),
     button(text("manual"), startManual, "text-button"),
   );
-  start.append(links);
-  copy.append(start);
-  const benefits = el("ul", "", "benefits");
-  for (const key of ["noAccount", "bilingual", "localFirst"] as const) {
-    const item = el("li");
-    item.append(icon("check"), el("span", text(key)));
-    benefits.append(item);
-  }
-  copy.append(benefits);
-  hero.append(copy, heroArt());
-  main.append(hero);
-  const local = el("section", "", "local-note");
-  local.append(
-    icon("shield"),
-    el("strong", text("local")),
-    el("span", text("localDetail")),
-  );
-  main.append(local);
-  const section = el("section", "", "samples-section");
-  const sectionHead = el("div", "", "samples-heading");
-  const titles = el("div");
-  titles.append(
-    el("p", text("samplesEyebrow"), "micro eyebrow"),
+  start.append(uploadButton, upload, alternatives);
+  sources.append(start);
+
+  const samples = el("section", "", "samples-section");
+  const sampleHeading = el("div", "", "samples-heading");
+  sampleHeading.append(
     el("h2", text("samplesTitle")),
+    el("p", text("sampleIntro"), "small"),
   );
-  sectionHead.append(titles, el("p", text("sampleIntro"), "small"));
-  section.append(sectionHead);
-  const cards = el("div", "", "sample-grid");
-  const names: StringKey[] = ["admission", "scholarship", "hostel"];
-  SAMPLE_IDS.forEach((id, i) => {
-    const card = el("article", "", "sample-card");
-    const thumb = el("div", "", "sample-thumb");
-    const img = el("img");
-    img.src = `/samples/${id}.png`;
-    img.alt = text(names[i]!);
-    thumb.append(img, el("span", `0${i + 1}`, "card-number"));
-    const body = el("div", "", "sample-body");
-    body.append(el("p", text("sample"), "micro"), el("h3", text(names[i]!)));
-    const template = templates.find((t) => t.id === id);
-    body.append(el("p", template?.title ?? id, "small"));
-    body.append(
-      actionButton(
-        "trySample",
-        () => {
-          void loadTemplates()
-            .then((ts) => chooseSample(ts.find((t) => t.id === id)!))
-            .catch(() => say(text("noFields")));
-        },
-        "sample-action",
-        "arrow",
-      ),
-    );
+  samples.append(sampleHeading);
+  const list = el("div", "", "sample-list");
+  const preview = el("figure", "", "sample-viewer");
+  const viewerHeader = el("div", "", "viewer-header");
+  viewerHeader.append(icon("paper"), el("span", text("samplePreview")));
+  const pageArea = el("div", "", "sample-page-area");
+  const picture = el("img", "", "sample-sheet");
+  picture.width = 595;
+  picture.height = 842;
+  pageArea.append(picture);
+  const caption = el("figcaption");
+  const captionName = el("strong");
+  caption.append(captionName, el("span", text("sample"), "sample-banner"));
+  preview.append(viewerHeader, pageArea, caption);
+
+  const showPreview = (index: number) => {
+    const name = text(sampleNames[index]!);
+    picture.src = `/samples/${SAMPLE_IDS[index]}.png`;
+    picture.alt = name;
+    captionName.textContent = name;
+  };
+  showPreview(0);
+
+  SAMPLE_IDS.forEach((id, index) => {
+    const row = el("article", "", "sample-row");
+    const copy = el("div", "", "sample-description");
+    copy.append(el("h3", text(sampleNames[index]!)));
     const links = el("div", "", "sample-links");
-    for (const [ext, k] of [
-      ["pdf", "blankPdf"],
+    for (const [suffix, key] of [
+      [".pdf", "blankPdf"],
       ["-crumpled.png", "crumpled"],
     ] as const) {
-      const a = el("a", text(k));
-      a.href = `/samples/${id}${ext === "pdf" ? ".pdf" : ext}`;
-      a.download = "";
-      links.append(a);
+      const link = el("a", text(key));
+      link.href = `/samples/${id}${suffix}`;
+      link.download = "";
+      links.append(link);
     }
-    body.append(links);
-    card.append(thumb, body);
-    cards.append(card);
+    copy.append(links);
+    const open = button(
+      text("trySample"),
+      () => {
+        void loadTemplates()
+          .then((loaded) =>
+            chooseSample(loaded.find((sample) => sample.id === id)!),
+          )
+          .catch(() => say(text("noFields")));
+      },
+      "secondary sample-action",
+    );
+    row.addEventListener("pointerenter", () => showPreview(index));
+    row.addEventListener("focusin", () => showPreview(index));
+    row.append(icon("paper"), copy, open);
+    list.append(row);
   });
-  section.append(cards);
-  main.append(section);
-}
-function heroArt() {
-  const art = el("div", "", "hero-art");
-  art.setAttribute("aria-hidden", "true");
-  art.append(el("div", text("artFlow"), "micro art-caption"));
-  const paper = el("div", "", "illustration-paper");
-  paper.append(icon("paper"), el("div", text("artTitle"), "art-title"));
-  for (const [key, value] of [
-    ["artName", "artNameValue"],
-    ["artDate", "artDateValue"],
-  ] as const) {
-    const patch = el("div", "", "art-patch");
-    const copy = el("div");
-    copy.append(el("p", text(key), "micro"), el("strong", text(value)));
-    patch.append(copy, icon("check"));
-    paper.append(patch);
-  }
-  paper.append(el("p", text("sample"), "micro art-demo"));
-  const tag = el("div", "", "art-ready");
-  const copy = el("div");
-  copy.append(el("strong", text("artReady")), el("span", text("artReadyHint")));
-  tag.append(icon("check"), copy);
-  art.append(el("div", "", "paper-shadow"), paper, tag);
-  return art;
+
+  samples.append(list);
+  sources.append(samples);
+  layout.append(sources, preview);
+  main.append(layout);
 }
 function workspace(main: HTMLElement) {
   const layout = el("div", "", `workspace workspace-${s.step}`),
     left = el("section", "", "document-panel");
   const documentHead = el("div", "", "document-head");
-  documentHead.append(icon("paper"), el("span", text("originalForm"), "micro"));
-  left.append(documentHead);
+  documentHead.append(icon("paper"), el("span", text("originalForm")));
   if (s.form!.source === "sample")
-    left.append(el("p", text("sample"), "sample-banner"));
+    documentHead.append(el("span", text("sample"), "sample-banner"));
+  left.append(documentHead);
   const preview = el("details", "", "document-preview");
-  preview.open = s.step === "check" || !matchMedia("(max-width:640px)").matches;
+  preview.open = s.step === "check" || !matchMedia("(max-width:720px)").matches;
   preview.append(el("summary", text("viewForm")), patchwork());
   left.append(el("h2", s.form!.title, "document-title"), preview);
   left.append(documentProgress());
@@ -893,7 +862,6 @@ function answerView(panel: HTMLElement) {
     }
     valueControl.id = "answer-value";
     valueControl.setAttribute("aria-describedby", "answer-issues");
-    valueControl.setAttribute("aria-invalid", String(r.status === "flagged"));
     valueControl.onchange = () => {
       record(valueControl!.value);
       updateIssues();
@@ -906,6 +874,10 @@ function answerView(panel: HTMLElement) {
   function updateIssues() {
     issues.replaceChildren();
     const result = s.result!.fields[f!.id]!;
+    valueControl?.setAttribute(
+      "aria-invalid",
+      String(result.status === "flagged"),
+    );
     for (const issue of result.issues)
       issues.append(el("p", messageFor(issue.code, s.lang, issue.params)));
     if (result.value)
@@ -1902,8 +1874,3 @@ window.addEventListener("beforeunload", (e) => {
   }
 });
 render();
-void loadTemplates()
-  .then(() => {
-    if (s.step === "choose" && !root.querySelector("dialog[open]")) render();
-  })
-  .catch(() => say(text("noFields")));

@@ -130,7 +130,7 @@ test("an OCR preparation failure keeps the uploaded page for manual correction",
     .locator("main input[type=file]")
     .setInputFiles("public/samples/sample-hollowbrook-hostel.png");
   await expect(
-    page.getByRole("heading", { name: "Make sure every box has a name." }),
+    page.getByRole("heading", { name: "Check detected fields" }),
   ).toBeVisible();
   await expect(page.locator(".document > img")).toHaveCount(1);
   await expect(
@@ -310,7 +310,7 @@ test(".stitch rejects a wrong passphrase and closing unlock prevents a late refi
     (window as unknown as { releaseUnlock: () => void }).releaseUnlock(),
   );
   await expect(
-    page.getByRole("heading", { name: "A little help with the paperwork." }),
+    page.getByRole("heading", { name: "Open a form" }),
   ).toBeVisible();
   await expect(page.locator(".task-panel")).toHaveCount(0);
 });
@@ -338,7 +338,7 @@ test("the typed sample-to-PDF journey can be completed using only the keyboard",
   await page.goto("/");
   await activate(page, "Try this sample");
   await expect(
-    page.getByRole("heading", { name: "Make sure every box has a name." }),
+    page.getByRole("heading", { name: "Check detected fields" }),
   ).toBeVisible();
   await activate(page, "Continue to answers");
   await tabTo(page, "Full name");

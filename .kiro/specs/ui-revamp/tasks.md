@@ -8,3 +8,4 @@
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 4.1_
 - [x] 4. Update README, KIRO_USAGE and evidence; scan and commit locally
   - _Requirements: 3.4, 4.1_
+- [x] 5. Respond to owner feedback with a document-first entry and editor. Verify the revised desktop and Hindi mobile layouts and preserve the sample-to-export journey.

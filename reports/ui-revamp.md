@@ -1,5 +1,19 @@
 # Gestalt UI revamp, 2026-11-19
 
+## Document workspace revision, 2026-11-20
+
+The owner rejected the first visual direction. The revised entry opens directly to import and practice forms, with the existing sample document rendered beside the controls. Hovering or focusing a sample row updates the preview. The editor places the original document and its progress next to the active task. A single DM Sans hierarchy, cool slate surfaces and blue active controls replace the display serif and paper illustration. Noto Sans Devanagari handles Hindi. Numbered steps retain visible labels on mobile.
+
+The layout uses the document-and-tools relationship shown in [Adobe's form editor documentation](https://helpx.adobe.com/acrobat/desktop/work-with-pdf-forms/fill-sign-forms/fill-sign.html) and the separate viewing and document controls described in [Firefox's PDF viewer documentation](https://support.mozilla.org/en-US/kb/view-pdf-files-firefox-or-choose-another-viewer). Stitchform uses its own layout and original sample assets.
+
+- [Entry screen](../output/playwright/workspace-entry.png)
+- [Desktop editor](../output/playwright/workspace-answer.png)
+- [Hindi mobile editor](../output/playwright/workspace-hindi-mobile.png)
+
+Chromium 159.0.8154.6 rendered the desktop entry, field check, answer, review and export views plus the Hindi mobile entry and editor. DM Sans and Noto Sans Devanagari loaded locally. The 320px layout checks and 200% CSS text-size simulation on the entry, answer and export passed without horizontal overflow. The automated journey exercises keyboard navigation, reduced motion, same-origin OCR, printable PDF output and encrypted refill. Physical devices and assistive technology still need manual checks.
+
+## First design iteration
+
 The owner requested a visual revamp using Gestalt techniques. This local implementation covers the entry page and all five form steps. It preserves form processing, privacy/consent, the no-LLM path and output formats. No publication, deployment or submission was performed.
 
 ## Design decisions

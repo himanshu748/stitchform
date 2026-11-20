@@ -12,11 +12,11 @@ export function contrastRatio(a: string, b: string): number {
   return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
 }
 export const colours = {
-  paper: "#f5f3e9",
-  ink: "#20392e",
-  muted: "#536359",
-  thread: "#a9c859",
-  dark: "#172b24",
+  paper: "#f5f7fb",
+  ink: "#1b2941",
+  muted: "#4d5d76",
+  thread: "#b8cbff",
+  dark: "#172238",
   warning: "#865315",
-  border: "#788476",
+  border: "#7989a4",
 };
