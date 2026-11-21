@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("Hindi field editing uses translated types and new-field defaults", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/app/");
   await page.getByLabel("Language", { exact: true }).selectOption("hi");
   await page.getByRole("button", { name: "यह नमूना आज़माएँ" }).first().click();
   const type = page.getByLabel("उत्तर का प्रकार", { exact: true });
@@ -30,7 +30,7 @@ for (const lang of ["en", "hi"] as const) {
   test(`${lang} stitch code has an accessible description and recovery warnings`, async ({
     page,
   }, testInfo) => {
-    await page.goto("/");
+    await page.goto("/app/");
     if (lang === "hi") {
       await page.setViewportSize({ width: 320, height: 850 });
       await page.getByLabel("Language", { exact: true }).selectOption("hi");

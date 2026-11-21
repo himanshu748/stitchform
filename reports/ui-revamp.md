@@ -1,5 +1,14 @@
 # Gestalt UI revamp, 2026-11-19
 
+## Landing page, 2026-11-21
+
+The landing uses a fictional scholarship application to show why someone might need help with a paper form. It pairs the repository's synthetic crumpled image with a real Stitchform PDF generated using typed demo answers. Poppler rendered the result and confirmed the normalised date and other typed fields through text extraction. The figure shows a preview with the signature left blank.
+
+- [Desktop landing](../output/playwright/landing-desktop.png)
+- [Mobile landing](../output/playwright/landing-mobile.png)
+
+Chromium rendered the page at 1440px, 390px and 320px. A 200% CSS text-size check at 320px showed no horizontal overflow after adapting the header and date example. Keyboard entry opened the featured sample at field check and produced a one-page sample PDF. In a simulated template failure, the picker stayed usable and opened a different sample.
+
 ## Document workspace revision, 2026-11-20
 
 The owner rejected the first visual direction. The revised entry opens directly to import and practice forms, with the existing sample document rendered beside the controls. Hovering or focusing a sample row updates the preview. The editor places the original document and its progress next to the active task. A single DM Sans hierarchy, cool slate surfaces and blue active controls replace the display serif and paper illustration. Noto Sans Devanagari handles Hindi. Numbered steps retain visible labels on mobile.

@@ -4,7 +4,7 @@ Prepared for Kiroween 2026. Target **2:45**, below the rules' three-minute limit
 
 | Time | Real screen action | Caption / point |
 |---|---|---|
-| 0:00–0:15 | Start screen, privacy strip, three practice forms | A form can be hard even when you know the answers. This is Stitchform. |
+| 0:00–0:15 | Show the landing comparison and choose Open your own form | A scholarship form can ask for a specific date format and have blanks you might miss. Stitchform guides you through each field. |
 | 0:15–0:35 | Upload the generated crumpled scholarship PNG; show actual OCR progress and editable boxes | Browser OCR, then human correction. Label the image a synthetic crumpled sample. |
 | 0:35–0:55 | Choose the hostel sample and check a field's name/box | Every sample is fictional and says SAMPLE / DEMO DATA. |
 | 0:55–1:20 | Type a fictional name; enter 31/02/2004, show error; replace with 5 March 2004 | Invalid dates are flagged; valid dates normalise to DD/MM/YYYY. |

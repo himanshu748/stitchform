@@ -44,6 +44,8 @@ export const en = {
     "Detection works best on samples. Check every label and box on other forms.",
   noFields:
     "No fields were found. Add fields by hand, retake the photo, or try a sample.",
+  sampleUnavailable:
+    "The sample could not open. Try it again from Practice forms, or open your own image.",
   checkTitle: "Check detected fields",
   checkHint: "Select a box on the page to edit its label, type or position.",
   checkKeyboard:
@@ -208,5 +210,6 @@ export const en = {
   scanFrame: "Read this camera frame",
   noQr: "No stitch QR found. Try better light or upload the image.",
   noServer: "No server stores your answers",
+  about: "About Stitchform",
 } as const;
 export type StringKey = keyof typeof en;

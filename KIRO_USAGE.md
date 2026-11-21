@@ -214,6 +214,8 @@ From the Kiro docs (pages cited in PLAN.md section 8) and what was observed on t
 
 ## Codex continuation, 2026-11-17
 
+2026-11-21 landing page: Codex added the thirteenth feature spec, `landing-page`, after the owner asked for a clearer problem and solution narrative. The landing compares a fictional scholarship image with a real Stitchform export and links to the working form picker and sample. The Vite multi-page configuration was checked against the official guide. This work was carried out in Codex.
+
 2026-11-20 UI revision: the owner rejected the brochure-style entry. Codex updated the existing `ui-revamp` design and task list, then implemented an import screen with a real sample preview and a compact document editor. Browser screenshots and checks are in `reports/ui-revamp.md`. The revision was implemented and verified locally by Codex.
 
 2026-11-19, owner-requested UI revamp: Codex wrote the twelfth feature spec (`ui-revamp`, with EARS requirements, design and tasks), mapped it to Design/Presentation/Potential Impact in PLAN.md, and implemented Gestalt grouping across the entry and five form steps. It added self-hosted OFL Fraunces/DM Sans fonts, original decorative icons/paper art, a connected stepper and separate task/export regions. Context7 queried MDN for variable-font declarations and SVG/accessibility APIs. The motion-design skill informed short, reduced-motion-aware transitions. Existing data-processing adapters and privacy/consent boundaries were retained. No additional Kiro run, hook execution or custom-agent review is implied. See `reports/ui-revamp.md` for references actually inspected, browser failures/fallbacks, screenshots and validation limits.

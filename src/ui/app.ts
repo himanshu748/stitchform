@@ -40,8 +40,8 @@ import "./seams.css";
 let voiceAnswer: { fieldId: string; text: string } | undefined;
 const s = initialState(),
   signatures = new Map<string, Uint8Array>();
-let templates: SampleTemplate[] = [],
-  imageUrl: string | undefined,
+const templates = new Map<string, SampleTemplate>();
+let imageUrl: string | undefined,
   backgroundBytes: Uint8Array | undefined;
 let seq = 0,
   revision = 0,
@@ -82,7 +82,7 @@ const context = () => {
 };
 const label = (f: FormField) =>
   s.lang === "hi"
-    ? (templates.find((t) => t.id === s.form?.id)?.labelsHi[f.id] ?? f.label)
+    ? ((s.form && templates.get(s.form.id)?.labelsHi[f.id]) ?? f.label)
     : f.label;
 function recalculate() {
   const hadExport = !!encrypted || !!pdfUrl;
@@ -201,16 +201,17 @@ function modal(
   d.showModal();
   return d;
 }
-async function loadTemplates() {
-  if (!templates.length)
-    templates = await Promise.all(
-      SAMPLE_IDS.map(async (id) => {
-        const r = await fetch(`/samples/${id}.template.json`);
-        if (!r.ok) throw new Error("Sample could not be loaded.");
-        return r.json() as Promise<SampleTemplate>;
-      }),
-    );
-  return templates;
+async function loadTemplate(id: string): Promise<SampleTemplate> {
+  const cached = templates.get(id);
+  if (cached) return cached;
+  const response = await fetch(`/samples/${id}.template.json`);
+  if (!response.ok) throw new Error("Sample could not be loaded.");
+  const template = (await response.json()) as SampleTemplate;
+  templates.set(id, template);
+  return template;
+}
+async function openSample(id: string) {
+  await chooseSample(await loadTemplate(id));
 }
 async function chooseSample(template: SampleTemplate) {
   stopVoice();
@@ -390,7 +391,9 @@ function render() {
   const footer = el("footer");
   const local = el("span", "", "local-status");
   local.append(icon("shield"), el("span", text("noServer")));
-  footer.append(local);
+  const about = el("a", text("about"));
+  about.href = "../";
+  footer.append(local, about);
   shell.append(footer);
   root.append(shell);
 }
@@ -506,11 +509,7 @@ function chooseView(main: HTMLElement) {
     const open = button(
       text("trySample"),
       () => {
-        void loadTemplates()
-          .then((loaded) =>
-            chooseSample(loaded.find((sample) => sample.id === id)!),
-          )
-          .catch(() => say(text("noFields")));
+        void openSample(id).catch(() => say(text("sampleUnavailable")));
       },
       "secondary sample-action",
     );
@@ -1698,9 +1697,10 @@ function openDialog() {
               say(text("badCode"));
               return;
             }
-            await loadTemplates();
+            const template = SAMPLE_IDS.includes(opened.formId)
+              ? await loadTemplate(opened.formId)
+              : undefined;
             if (!active()) return;
-            const template = templates.find((t) => t.id === opened.formId);
             if (template && (!s.form || s.form.id !== opened.formId))
               await chooseSample(template);
             else if (!s.form) {
@@ -1831,11 +1831,11 @@ async function processCanvas(canvas: HTMLCanvasElement) {
       ),
     );
     if (controller.signal.aborted) return;
-    await loadTemplates();
+    const availableTemplates = await Promise.all(SAMPLE_IDS.map(loadTemplate));
     const { detectFields } = await import("../ocr");
     const result = await detectFields(
       canvas,
-      templates,
+      availableTemplates,
       (n) => {
         const p = d.querySelector("progress");
         if (p) p.value = n;
@@ -1873,4 +1873,13 @@ window.addEventListener("beforeunload", (e) => {
     e.returnValue = "";
   }
 });
-render();
+const sampleOnEntry = new URLSearchParams(location.search).get("sample");
+if (sampleOnEntry && SAMPLE_IDS.includes(sampleOnEntry)) {
+  history.replaceState(history.state, "", location.pathname + location.hash);
+  void openSample(sampleOnEntry).catch(() => {
+    render();
+    say(text("sampleUnavailable"));
+  });
+} else {
+  render();
+}

@@ -20,7 +20,7 @@ test("typed no-LLM flow: validation, signature, PDF, encrypted QR refill", async
     }
     return route.continue();
   });
-  await page.goto("/");
+  await page.goto("/app/");
   await page.getByRole("button", { name: "Try this sample" }).nth(2).click();
   await page
     .getByRole("button", { name: "Continue to answers", exact: true })
@@ -125,7 +125,7 @@ test("typed no-LLM flow: validation, signature, PDF, encrypted QR refill", async
 test("mobile, Hindi, keyboard and reduced-motion states", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 760 });
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/app/");
   await expect(
     page.getByRole("heading", { name: "Open a form" }),
   ).toBeVisible();
@@ -197,7 +197,7 @@ test("uploaded sample runs local English/Hindi OCR without third-party requests"
     )
       foreign.push(r.url());
   });
-  await page.goto("/");
+  await page.goto("/app/");
   await page
     .locator("main input[type=file]")
     .setInputFiles("public/samples/sample-moonfield-scholarship.png");
@@ -214,7 +214,7 @@ test("uploaded sample runs local English/Hindi OCR without third-party requests"
 });
 
 test("Hindi values produce a PDF using the bundled font", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/app/");
   await page.getByRole("button", { name: "Try this sample" }).first().click();
   await page
     .getByRole("button", { name: "Continue to answers", exact: true })
@@ -250,7 +250,7 @@ test("optional model UI keeps rules on a simulated 503, and never sends the imag
     sent = route.request().postDataJSON();
     return route.fulfill({ status: 503, body: "warming up" });
   });
-  await page.goto("/");
+  await page.goto("/app/");
   await page.getByRole("button", { name: "Try this sample" }).first().click();
   await page.getByRole("button", { name: "04 Review", exact: true }).click();
   await page.getByText("LLM · Off", { exact: true }).click();
@@ -273,7 +273,7 @@ test("optional model UI keeps rules on a simulated 503, and never sends the imag
 });
 
 test("deleting a filled field requires confirmation", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/app/");
   await page.getByRole("button", { name: "Try this sample" }).first().click();
   await page
     .getByRole("button", { name: "Continue to answers", exact: true })

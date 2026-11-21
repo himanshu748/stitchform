@@ -3,11 +3,110 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Stitchform turns a photo of a paper form into a filled, printable PDF in your browser." />
-    <title>Stitchform</title>
+    <meta name="description" content="Photograph a paper form, answer one field at a time in English or Hindi, and download a filled PDF with Stitchform." />
+    <link rel="stylesheet" href="/src/landing.css" />
+    <title>Stitchform | Fill a paper form from a photo</title>
   </head>
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <a href="#content" class="skip-link">Skip to content</a>
+    <header class="site-header">
+      <div class="frame header-row">
+        <a class="brand" href="./" aria-label="Stitchform home">
+          <span class="brand-mark" aria-hidden="true"></span>
+          Stitchform
+        </a>
+        <nav aria-label="Main navigation">
+          <a class="nav-link" href="#how">How it works</a>
+          <a class="nav-link" href="#privacy">Privacy</a>
+          <a class="action outline" href="./app/">Open the app</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="content">
+      <section class="frame hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <h1 id="hero-title">Fill a paper form from a photo.</h1>
+          <p>Stitchform finds the fields, guides you through them in English or Hindi, and puts your answers back on the page as a printable PDF.</p>
+          <div class="actions">
+            <a class="action primary" href="./app/?sample=sample-moonfield-scholarship">Try the scholarship sample</a>
+            <a class="action plain" href="./app/">Open your own form</a>
+          </div>
+          <p class="entry-note">No account needed. You can type every answer.</p>
+        </div>
+        <figure class="demo">
+          <div class="demo-board">
+            <div class="document">
+              <img src="/landing/scholarship-photo.webp" width="680" height="962" alt="Crumpled fictional scholarship form with blank fields." fetchpriority="high" />
+              <span>Paper form photo</span>
+            </div>
+            <div class="stitch-arrow" aria-hidden="true"></div>
+            <div class="document">
+              <img src="/landing/scholarship-export.webp" width="680" height="962" alt="The same fictional form exported from Stitchform, with the sample name, date of birth and other answers in their boxes." />
+              <span>Printable PDF</span>
+            </div>
+          </div>
+          <figcaption>Simulated photo of a fictional form. PDF exported from Stitchform with sample answers.</figcaption>
+        </figure>
+      </section>
+
+      <section class="problem" aria-labelledby="problem-title">
+        <div class="frame problem-row">
+          <div>
+            <h2 id="problem-title">A paper form leaves you guessing.</h2>
+            <p>Imagine applying for a scholarship with a creased form. You have to read small labels, work out the date format, and spot missing answers or a signature before you hand it in.</p>
+          </div>
+          <aside class="date-example" aria-label="Example of date formatting">
+            <p>Date of birth</p>
+            <dl>
+              <div><dt>What you type</dt><dd>5 March 2004</dd></div>
+              <div><dt>What prints</dt><dd>05/03/2004</dd></div>
+            </dl>
+            <p class="date-note">Impossible dates are flagged so you can fix them.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="frame workflow" id="how" aria-labelledby="how-title">
+        <h2 id="how-title">From photo to filled form</h2>
+        <ol role="list">
+          <li>
+            <h3>Capture and check</h3>
+            <p>Take a photo or upload an image. Stitchform looks for labels and boxes. Check and correct anything it missed before you start.</p>
+          </li>
+          <li>
+            <h3>Answer one field at a time</h3>
+            <p>Type in English or Hindi. You can also speak where your browser supports it. Review flagged dates, missing answers and signature reminders.</p>
+          </li>
+          <li>
+            <h3>Print or pick up later</h3>
+            <p>Download a PDF with your answers in place. Save a passphrase-protected stitch code if you want to refill text answers later.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="privacy" id="privacy" aria-labelledby="privacy-title">
+        <div class="frame privacy-row">
+          <h2 id="privacy-title">Your form stays in your browser by default.</h2>
+          <div>
+            <p>Stitchform reads images and builds PDFs on your device. No Stitchform server stores your answers.</p>
+            <p>If you turn on voice or model assistance, your browser or chosen provider may process audio or answer text. Stitchform asks before sending them.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="frame closing" aria-labelledby="closing-title">
+        <div>
+          <h2 id="closing-title">Practice on a scholarship form.</h2>
+          <p>Use made-up answers and download your own sample PDF.</p>
+        </div>
+        <a class="action primary" href="./app/?sample=sample-moonfield-scholarship">Try the scholarship sample</a>
+      </section>
+    </main>
+
+    <footer class="frame site-footer">
+      <p>Stitchform</p>
+      <p>Built for Kiroween 2026</p>
+    </footer>
   </body>
 </html>

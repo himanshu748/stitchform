@@ -153,6 +153,8 @@ Each feature maps to exactly one judging criterion and gets its own spec folder 
 | F9 | 3 sample forms | Script-generated fictional forms labelled "SAMPLE / DEMO DATA" so judges can test without real documents. | Presentation | `.kiro/specs/sample-forms/` |
 | F10 | Accessibility | WCAG AA contrast, keyboard flow, screen-reader labels, reduced motion, large-text mode. | Design | `.kiro/specs/accessibility/` |
 | F11 | Deliverable docs | README, KIRO_USAGE.md, DEVPOST_STORY.md, VIDEO_SHOTLIST.md, BLOG_DRAFT.md, SOCIAL_POST.md, SUBMISSION_CHECKLIST.md. | Presentation | `.kiro/specs/deliverable-docs/` |
+| F12 | Gestalt workspace revamp | A form picker with sample previews and a document beside the current editing task. | Design | `.kiro/specs/ui-revamp/` |
+| F13 | Landing page | Show the paper-form problem, a real sample PDF export and a direct path to try the workflow. | Presentation | `.kiro/specs/landing-page/` |
 
 **Coverage check**
 
@@ -160,9 +162,9 @@ Each feature maps to exactly one judging criterion and gets its own spec folder 
 |---|---|
 | Potential Impact | F3, F5 |
 | Technological Implementation | F1, F2, F6 |
-| Design | F8, F10 |
+| Design | F8, F10, F12 |
 | Innovation/Idea | F4, F7 |
-| Presentation | F9, F11 |
+| Presentation | F9, F11, F13 |
 
 **Requirements fixed now so the specs inherit them**
 

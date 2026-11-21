@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 async function answerFirstField(page: import("@playwright/test").Page) {
-  await page.goto("/");
+  await page.goto("/app/");
   await page.getByRole("button", { name: "Try this sample" }).first().click();
   await page
     .getByRole("button", { name: "Continue to answers", exact: true })
@@ -125,7 +125,7 @@ test("an OCR preparation failure keeps the uploaded page for manual correction",
   await page.route("**/samples/*.template.json", (route) =>
     route.fulfill({ status: 503, body: "unavailable" }),
   );
-  await page.goto("/");
+  await page.goto("/app/");
   await page
     .locator("main input[type=file]")
     .setInputFiles("public/samples/sample-hollowbrook-hostel.png");
@@ -335,7 +335,7 @@ async function activate(page: import("@playwright/test").Page, name: string) {
 test("the typed sample-to-PDF journey can be completed using only the keyboard", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/app/");
   await activate(page, "Try this sample");
   await expect(
     page.getByRole("heading", { name: "Check detected fields" }),
