@@ -7,7 +7,7 @@ export async function renderTextImage(
   fontReady ??= (async () => {
     const face = new FontFace(
       "Stitchform Devanagari",
-      "url(/fonts/NotoSansDevanagari-Regular.ttf)",
+      "url(../fonts/NotoSansDevanagari-Regular.ttf)",
     );
     await face.load();
     document.fonts.add(face);

@@ -29,9 +29,9 @@ export async function detectFields(
   signal.addEventListener("abort", abort, { once: true });
   try {
     worker = await createWorker(["eng", "hin"], OEM.LSTM_ONLY, {
-      workerPath: "/tesseract/worker.min.js",
-      corePath: "/tesseract/core",
-      langPath: "/tesseract/lang",
+      workerPath: "../tesseract/worker.min.js",
+      corePath: "../tesseract/core",
+      langPath: "../tesseract/lang",
       workerBlobURL: false,
       cacheMethod: "none",
       logger: (m) => {

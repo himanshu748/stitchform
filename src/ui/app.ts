@@ -204,7 +204,7 @@ function modal(
 async function loadTemplate(id: string): Promise<SampleTemplate> {
   const cached = templates.get(id);
   if (cached) return cached;
-  const response = await fetch(`/samples/${id}.template.json`);
+  const response = await fetch(`../samples/${id}.template.json`);
   if (!response.ok) throw new Error("Sample could not be loaded.");
   const template = (await response.json()) as SampleTemplate;
   templates.set(id, template);
@@ -220,7 +220,7 @@ async function chooseSample(template: SampleTemplate) {
   s.answers = [];
   signatures.clear();
   s.current = 0;
-  imageUrl = `/samples/${template.id}.png`;
+  imageUrl = `../samples/${template.id}.png`;
   backgroundBytes = undefined;
   encrypted = undefined;
   qrUrl = undefined;
@@ -485,7 +485,7 @@ function chooseView(main: HTMLElement) {
 
   const showPreview = (index: number) => {
     const name = text(sampleNames[index]!);
-    picture.src = `/samples/${SAMPLE_IDS[index]}.png`;
+    picture.src = `../samples/${SAMPLE_IDS[index]}.png`;
     picture.alt = name;
     captionName.textContent = name;
   };
@@ -501,7 +501,7 @@ function chooseView(main: HTMLElement) {
       ["-crumpled.png", "crumpled"],
     ] as const) {
       const link = el("a", text(key));
-      link.href = `/samples/${id}${suffix}`;
+      link.href = `../samples/${id}${suffix}`;
       link.download = "";
       links.append(link);
     }
@@ -1413,7 +1413,7 @@ function saveView(panel: HTMLElement) {
           let bg: import("../pdf/build").Background = { kind: "clean" };
           if (backgroundMode === "over") {
             if (form.source === "sample" && !photo) {
-              const response = await fetch(`/samples/${form.id}.pdf`);
+              const response = await fetch(`../samples/${form.id}.pdf`);
               if (!response.ok) throw Error();
               bg = {
                 kind: "sample-pdf",
@@ -1514,7 +1514,7 @@ function saveView(panel: HTMLElement) {
           value = pass.input.value;
         invalidateCode();
         pendingCode = false;
-        void fetch("/wordlists/eff_large_wordlist.txt")
+        void fetch("../wordlists/eff_large_wordlist.txt")
           .then((r) => r.text())
           .then((raw) => {
             if (
@@ -1551,7 +1551,7 @@ function saveView(panel: HTMLElement) {
           pass.input.isConnected &&
           phrase === pass.input.value;
         void (async () => {
-          const raw = await fetch("/wordlists/common-passwords.txt").then((r) =>
+          const raw = await fetch("../wordlists/common-passwords.txt").then((r) =>
               r.text(),
             ),
             check = checkCustomPassphrase(phrase, parseCommonPasswords(raw));
