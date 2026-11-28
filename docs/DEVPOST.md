@@ -27,8 +27,8 @@ The [validation property tests](../src/validation/validators.property.test.ts) c
 | --- | --- |
 | Category | Frankenstein |
 | Source | [Public GitHub repository](https://github.com/himanshu748/stitchform) with MIT license and root `.kiro/` |
-| Working application | Enter the public URL after a signed-out run of the hosted sample. The repository includes the **Publish browser demo** workflow. |
-| Demonstration video | Enter the verified public YouTube URL. The event recommends a video under three minutes. |
+| Working application | [Live GitHub Pages demo](https://himanshu748.github.io/stitchform/). The scholarship sample opens without an account or API key. |
+| Demonstration video | [Public YouTube walkthrough](https://youtu.be/LgJKqV3cvzQ) (1:07). |
 | Testing instructions | Use the four-step no-account workflow above. |
 | Reuse | [Pre-existing work and licenses](../README.md#pre-existing-work) |
 | Eligibility and survey responses | Entrant completes the personal fields and any optional bonus declarations. |
