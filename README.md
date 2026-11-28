@@ -2,9 +2,11 @@
 
 Turn a paper form into a filled, printable PDF, one answer at a time. Stitchform is for people who find forms difficult and the helpers who fill them out with them.
 
-Built for the [Kiroween 2026 hackathon](https://kiroween.devpost.com/) in the **Frankenstein** category. The local application is implemented; public release and submission are pending. No user research, adoption or real-world OCR accuracy is claimed.
+Built for the [Kiroween 2026 hackathon](https://kiroween.devpost.com/) in the **Frankenstein** category. The browser demo is public. The sample journey uses fictional data.
 
-**Working app URL:** pending public deployment. The browser-only build can be served from a static web root or a project subdirectory. On GitHub Pages, select **GitHub Actions** in **Settings → Pages**, then run **Publish browser demo** from `main`. The published landing page links to the form editor and its bundled sample. No account or API key is needed for that path.
+**[Try Stitchform](https://himanshu748.github.io/stitchform/)** · [Watch the 1:07 demo](https://youtu.be/LgJKqV3cvzQ) · [Judge instructions](docs/DEVPOST.md)
+
+The hosted sample opens without an account or API key.
 
 ![The Stitchform editor with a fictional college form beside the active date-of-birth field](output/playwright/workspace-answer.png)
 
